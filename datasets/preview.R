@@ -24,14 +24,14 @@ output$data_spectro_plot = renderPlotly({
             .gg = ggplot(.dt, aes(x = x, y = y, fill = z)) +
                 geom_raster() +
                 scale_fill_viridis_c(option = "magma", guide = guide_colorbar(title = "Power (dB)", barheight = 12, barwidth = 0.5)) +
-                theme_bw(base_size = 9) +
+                theme_bw(base_size = 25) +
                 theme() +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
                 labs(x = "Time (s)", y = "Frequency (Hz)")
 
             .ggplotly = subplot(ggplotly(.gg), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(format= 'svg')) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -51,13 +51,13 @@ output$data_lag_plot = renderPlotly({
             .gg1 = ggplot(data.table(x = (1:length(.dt1)) - 1, y = .dt1), aes(x = x, y = y)) +
                 geom_hline(yintercept = 0, linetype = "dotted", size = 0.5) +
                 geom_line(size = 0.2, color = "#a02010") +
-                theme_bw(base_size = 9) +
+                theme_bw(base_size = 25) +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
                 labs(x = "Lag", y = "Lag-n Autocorrelation")
 
             .ggplotly = subplot(ggplotly(.gg1), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(format= 'svg')) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -76,13 +76,13 @@ output$data_power_plot = renderPlotly({
 
             .gg2 = ggplot(data.table(x = .dt2$freq, y = gsignal::pow2db(.dt2$spec)), aes(x = x, y = y)) +
                 geom_line(size = 0.2, color = "#1020a0") +
-                theme_bw(base_size = 9) +
+                theme_bw(base_size = 25) +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
                 labs(x = "Frequency (Hz)", y = "Power (dB)")
 
             .ggplotly = subplot(ggplotly(.gg2), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(format= 'svg')) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
