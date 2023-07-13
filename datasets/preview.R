@@ -125,9 +125,9 @@ output$data_plot = renderPlotly({
                 theme(legend.position = "bottom", text = element_text(size = input$data_font_size, family = input$data_font_family))
 
             .ggplotly = ggplotly(.gg) %>%
-                config() %>%
-                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
-                       xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
+                config(toImageButtonOptions = list(format= 'svg')) %>%
+                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1, xref = "container", yref = "container"),
+                       xaxis = list(title = ifelse(input$data_plot_x == "(time)", "Time", input$data_plot_x), tickmode = "auto"), yaxis = list(title = input$data_plot_y[1], tickmode = "auto"))
 
             if (use.y2) {
                 .ggplotly = .ggplotly %>% add_trace(x = .dt[, X], y = .dt[, Y2], name=input$data_plot_y[2], yaxis= ifelse(input$data_scale_y_y2, "y", "y2"), mode="lines", type = "scatter",
@@ -136,8 +136,8 @@ output$data_plot = renderPlotly({
                 if (!input$data_scale_y_y2) {
                     .ggplotly = .ggplotly %>%
                         layout(margin = list(t = 0, b = 0, l = 80, r = 80),
-                            yaxis2 = list(side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color))) %>%
-                        layout(annotations = list(x = 0, y = -0.1, showarrow=F, font=list(size = 9, color = "red"), text = "Note: Plotting two traces with different scales on the same graph may be misleading.", xref = "paper", yref = "paper"))
+                            yaxis2 = list(title = list(text = input$data_plot_y[2], font = list(color = input$data_y2_color)), side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color))) #%>%
+                        #layout(annotations = list(x = 0, y = -0.1, showarrow=F, font=list(size = 9, color = "red"), text = "Note: Plotting two traces with different scales on the same graph may be misleading.", xref = "paper", yref = "paper"))
                 }
             }
 
