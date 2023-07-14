@@ -84,13 +84,9 @@ output$events_preview = renderPlotly({
 
         .gg
     }) %>%
+        # TODO: Fix overlapping headings for non-events time
         config(toImageButtonOptions = list(format= 'svg')) %>%
-        if (input$events_series_x == "event time") {
-            layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1),
-                   xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>% toWebGL2()
-        } else {
-            # TODO: Fix this overlapping with x-axis labels
-            layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
-                   xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>% toWebGL2()
-        }
+        layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1),
+            xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
+        toWebGL2()
 })
