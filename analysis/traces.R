@@ -52,12 +52,12 @@
 
         .gg = .gg + geom_line(size = input$heatmap2_y_size, color = input$heatmap2_meansd_line, alpha = input$heatmap2_y_alpha) +
             (get(paste0("theme_", input$heatmap2_theme)))(base_size = input$heatmap2_font_size) +
-            labs(x = "Event Time", y = NULL) +
+            labs(x = "Event Time", y = "Normalization") +
             theme(legend.position = "bottom", text = element_text(size = input$heatmap2_font_size, family = input$heatmap2_font_family))
 
 
          .gg
-     })  %>% config() %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
+     })  %>% config(toImageButtonOptions = list(format= 'svg')) %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
  })
 
  observeEvent(input$heatmap2_dataset, {

@@ -47,7 +47,7 @@
      .gg = ggplot(dataset, aes(x = Xstr, y = e, fill = Y)) +
         geom_tile(aes(color = Y), lwd = 0.5) +
         (get(paste0("theme_", input$heatmap_theme)))(base_size = input$heatmap_font_size) +
-        labs(x = "Event Time", y = NULL) +
+        labs(x = "Event Time", y = "Event Number") +
         theme(legend.position = "bottom", text = element_text(size = input$heatmap_font_size, family = input$heatmap_font_family)) + scale_color_continuous(guide = guide_none())
 
      if (input$heatmap_palette == "gradient2") {
@@ -62,7 +62,7 @@
 
      output$heatmap_plot_static = renderPlot(.gg)
 
-     ggplotly(.gg)  %>% config() %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
+     ggplotly(.gg)  %>% config(toImageButtonOptions = list(format= 'svg')) %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
  })
 
 .heatmap = reactiveValues()
