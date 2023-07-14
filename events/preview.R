@@ -41,7 +41,7 @@ output$events_preview = renderPlotly({
             #facet_grid(s ~ .) +
             (get(paste0("theme_", input$events_theme)))(base_size = input$events_font_size) +
             labs(x = input$events_title_xaxis, y = input$events_title_yaxis) +
-            theme(panel.spacing = unit(0, "cm")) +
+            theme(panel.spacing = unit(0, "cm"), text=element_text(family=input$events_font_Family)) +
             coord_cartesian(expand = F)
 
         if (input$events_series_x == "event time") {
@@ -84,8 +84,13 @@ output$events_preview = renderPlotly({
 
         .gg
     }) %>%
-        config() %>%
-        layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
-            xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
-        toWebGL2()
+        config(toImageButtonOptions = list(format= 'svg')) %>%
+        if (input$events_series_x == "event time") {
+            layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1),
+                   xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>% toWebGL2()
+        } else {
+            # TODO: Fix this overlapping with x-axis labels
+            layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
+                   xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>% toWebGL2()
+        }
 })
