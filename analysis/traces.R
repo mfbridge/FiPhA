@@ -1,4 +1,4 @@
- output$heatmap2_plot = renderPlotly({
+output$heatmap2_plot = renderPlotly({
     req(input$heatmap2_dataset)
     req(input$heatmap2_series)
 
@@ -19,53 +19,54 @@
 
     if (input$traces_sdse == "SD") {
         dataset[, `:=`(meanY = mean(Y, na.rm = T),
-            upperY = mean(Y, na.rm = T) + input$heatmap2_meansd_n * sd(Y, na.rm = T),
-            lowerY = mean(Y, na.rm = T) - input$heatmap2_meansd_n * sd(Y, na.rm = T)), by = .(f, s, Xstr)]
+                       upperY = mean(Y, na.rm = T) + input$heatmap2_meansd_n * sd(Y, na.rm = T),
+                       lowerY = mean(Y, na.rm = T) - input$heatmap2_meansd_n * sd(Y, na.rm = T)), by = .(f, s, Xstr)]
     } else {
         dataset[, `:=`(meanY = mean(Y, na.rm = T),
-            upperY = mean(Y, na.rm = T) + input$heatmap2_meansd_n * sd(Y, na.rm = T) / sqrt(.N),
-            lowerY = mean(Y, na.rm = T) - input$heatmap2_meansd_n * sd(Y, na.rm = T) / sqrt(.N)), by = .(f, s, Xstr)]
+                       upperY = mean(Y, na.rm = T) + input$heatmap2_meansd_n * sd(Y, na.rm = T) / sqrt(.N),
+                       lowerY = mean(Y, na.rm = T) - input$heatmap2_meansd_n * sd(Y, na.rm = T) / sqrt(.N)), by = .(f, s, Xstr)]
     }
 
     dataset = dataset[!is.na(Y)&!is.na(upperY)&!is.na(lowerY),]
-     ggplotly({
-         .gg = ggplot(dataset, aes(x = X, y = meanY, color = f)) +
-             geom_hline(yintercept = 0, linetype = "solid", size = 0.2) +
-             geom_vline(xintercept = 0, linetype = "dotted", size = 0.2)
+    ggplotly({
+        .gg = ggplot(dataset, aes(x = X, y = meanY, color = f)) +
+            geom_hline(yintercept = 0, linetype = "solid", size = 0.2) +
+            geom_vline(xintercept = 0, linetype = "dotted", size = 0.2)
 
-         # if (input$heatmap2_palette == "gradient2") {
-         #    .gg = .gg + scale_fill_gradientn(colors = c(input$heatmap2_from, input$heatmap2_to), guide = guide_colorsteps(title = NULL))
-         # } else {
-         #    .gg = .gg + scale_fill_viridis_c(option = input$heatmap2_palette, guide = guide_colorsteps(title = NULL))
-         # }
-         #
+        # if (input$heatmap2_palette == "gradient2") {
+        #    .gg = .gg + scale_fill_gradientn(colors = c(input$heatmap2_from, input$heatmap2_to), guide = guide_colorsteps(title = NULL))
+        # } else {
+        #    .gg = .gg + scale_fill_viridis_c(option = input$heatmap2_palette, guide = guide_colorsteps(title = NULL))
+        # }
+        #
 
         if (input$heatmap2_meansd & input$heatmap2_shade_intervals) {
             .gg = .gg +
-                geom_ribbon(aes(x = X, ymax = upperY, ymin=lowerY, fill = interaction(f, s, i)), alpha = input$heatmap2_y_alpha, inherit.aes = F)# +
-                #getPaletteFill(input$heatmap2_shade_palette, input$heatmap2_shade_from, input$heatmap2_shade_to)
+                geom_ribbon(aes(x = X, ymax = upperY, ymin=lowerY, fill = interaction(f, s, i)), alpha = input$heatmap2_y_alpha, inherit.aes = F) +
+                scale_fill_manual(values=c("#C3FCE8", hue_pal()(length(input$heatmap2_dataset) + length(input$heatmap2_series) + length(data$events[[f]][[s]]))))# +
+            #getPaletteFill(input$heatmap2_shade_palette, input$heatmap2_shade_from, input$heatmap2_shade_to)
         } else if (input$heatmap2_meansd & !input$heatmap2_shade_intervals) {
             .gg = .gg +
-                geom_ribbon(aes(x = X, ymax = upperY, ymin=lowerY, fill = interaction(f, s)), inherit.aes = F) #+
-                # scale_fill_gradient(low = "#404040", high = input$heatmap2_meansd_area)
+                geom_ribbon(aes(x = X, ymax = upperY, ymin=lowerY, fill = interaction(f, s)), inherit.aes = F) +
+             scale_fill_manual(values=c("#C3FCE8", hue_pal()(length(input$heatmap2_dataset) + length(input$heatmap2_series))))
         }
 
         .gg = .gg + geom_line(size = input$heatmap2_y_size, color = input$heatmap2_meansd_line, alpha = input$heatmap2_y_alpha) +
             (get(paste0("theme_", input$heatmap2_theme)))(base_size = input$heatmap2_font_size) +
-            labs(x = "Event Time", y = NULL) +
+            labs(x = "Event Time", y = "Normalization") +
             theme(legend.position = "bottom", text = element_text(size = input$heatmap2_font_size, family = input$heatmap2_font_family))
 
 
-         .gg
-     })  %>% config() %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
- })
+        .gg
+    })  %>% config(toImageButtonOptions = list(format= 'svg')) %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1, xref = "container", yref = "container"), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
+})
 
- observeEvent(input$heatmap2_dataset, {
+observeEvent(input$heatmap2_dataset, {
     updatePickerInput(session, "heatmap2_series", choices = names(data$series[[input$heatmap2_dataset]]))
- })
+})
 
- observeEvent(input$heatmap2_auc_type, {
-     if (input$heatmap2_auc_type == "range") {
+observeEvent(input$heatmap2_auc_type, {
+    if (input$heatmap2_auc_type == "range") {
         .min = Inf
         .max = -Inf
         for (s in input$heatmap2_series) {
@@ -77,5 +78,5 @@
             }
         }
         updateSliderInput(session, "heatmap_auc_range", min = .min, max = .max, value = c(.min, .max))
-     }
- })
+    }
+})
