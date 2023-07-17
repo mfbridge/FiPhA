@@ -58,7 +58,7 @@ output$heatmap2_plot = renderPlotly({
 
 
         .gg
-    })  %>% config(toImageButtonOptions = list(format= 'svg')) %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
+    })  %>% config(toImageButtonOptions = list(format= 'svg')) %>% layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1, xref = "container", yref = "container"), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))# %>% toWebGL2()
 })
 
 observeEvent(input$heatmap2_dataset, {
