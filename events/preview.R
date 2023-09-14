@@ -41,7 +41,7 @@ output$events_preview = renderPlotly({
             #facet_grid(s ~ .) +
             (get(paste0("theme_", input$events_theme)))(base_size = input$events_font_size) +
             labs(x = input$events_title_xaxis, y = input$events_title_yaxis) +
-            theme(panel.spacing = unit(0, "cm"), text=element_text(family=input$events_font_Family)) +
+            theme(panel.spacing = unit(0, "cm")) +
             coord_cartesian(expand = F)
 
         if (input$events_series_x == "event time") {
@@ -84,9 +84,8 @@ output$events_preview = renderPlotly({
 
         .gg
     }) %>%
-        # TODO: Fix overlapping headings for non-events time
-        config(toImageButtonOptions = list(format= 'svg')) %>%
-        layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1),
+        config() %>%
+        layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
             xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
         toWebGL2()
 })

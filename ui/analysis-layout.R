@@ -32,7 +32,7 @@ analysis.ui = navbarMenu("Analysis",
                                                 list(type="checkbox", id = "heatmap2_shade_intervals", value = T, text = "Shade Area By Intervals"),
 
                                                 list(type="palette", text="Palette", palette.id="heatmap2_shade_palette", from.id = "heatmap2_shade_from", to.id = "heatmap2_shade_to", from.color = "#000000", to.color = "#ffffff"),
-                                                list(type="line-color", id = "heatmap2_meansd_area", value = "#1259ff", text = "SE/SD Color")
+                                                list(type="line-color", id = "heatmap2_meansd_area", value = "#1259ff", text = "SD Color")
                                         )
                         ))
                     )

@@ -24,14 +24,14 @@ output$data_spectro_plot = renderPlotly({
             .gg = ggplot(.dt, aes(x = x, y = y, fill = z)) +
                 geom_raster() +
                 scale_fill_viridis_c(option = "magma", guide = guide_colorbar(title = "Power (dB)", barheight = 12, barwidth = 0.5)) +
-                theme_bw(base_size = 25) +
+                theme_bw(base_size = 9) +
                 theme() +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
                 labs(x = "Time (s)", y = "Frequency (Hz)")
 
             .ggplotly = subplot(ggplotly(.gg), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config(toImageButtonOptions = list(format= 'svg')) %>%
+                config() %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -51,13 +51,13 @@ output$data_lag_plot = renderPlotly({
             .gg1 = ggplot(data.table(x = (1:length(.dt1)) - 1, y = .dt1), aes(x = x, y = y)) +
                 geom_hline(yintercept = 0, linetype = "dotted", size = 0.5) +
                 geom_line(size = 0.2, color = "#a02010") +
-                theme_bw(base_size = 25) +
+                theme_bw(base_size = 9) +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
                 labs(x = "Lag", y = "Lag-n Autocorrelation")
 
             .ggplotly = subplot(ggplotly(.gg1), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config(toImageButtonOptions = list(format= 'svg')) %>%
+                config() %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -76,13 +76,13 @@ output$data_power_plot = renderPlotly({
 
             .gg2 = ggplot(data.table(x = .dt2$freq, y = gsignal::pow2db(.dt2$spec)), aes(x = x, y = y)) +
                 geom_line(size = 0.2, color = "#1020a0") +
-                theme_bw(base_size = 25) +
+                theme_bw(base_size = 9) +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
                 labs(x = "Frequency (Hz)", y = "Power (dB)")
 
             .ggplotly = subplot(ggplotly(.gg2), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config(toImageButtonOptions = list(format= 'svg')) %>%
+                config() %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -125,9 +125,9 @@ output$data_plot = renderPlotly({
                 theme(legend.position = "bottom", text = element_text(size = input$data_font_size, family = input$data_font_family))
 
             .ggplotly = ggplotly(.gg) %>%
-                config(toImageButtonOptions = list(format= 'svg')) %>%
-                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = 1, xref = "container", yref = "container"),
-                       xaxis = list(title = ifelse(input$data_plot_x == "(time)", "Time", input$data_plot_x), tickmode = "auto"), yaxis = list(title = input$data_plot_y[1], tickmode = "auto"))
+                config() %>%
+                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
+                       xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
 
             if (use.y2) {
                 .ggplotly = .ggplotly %>% add_trace(x = .dt[, X], y = .dt[, Y2], name=input$data_plot_y[2], yaxis= ifelse(input$data_scale_y_y2, "y", "y2"), mode="lines", type = "scatter",
@@ -136,8 +136,8 @@ output$data_plot = renderPlotly({
                 if (!input$data_scale_y_y2) {
                     .ggplotly = .ggplotly %>%
                         layout(margin = list(t = 0, b = 0, l = 80, r = 80),
-                            yaxis2 = list(title = list(text = input$data_plot_y[2], font = list(color = input$data_y2_color)), side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color))) #%>%
-                        #layout(annotations = list(x = 0, y = -0.1, showarrow=F, font=list(size = 9, color = "red"), text = "Note: Plotting two traces with different scales on the same graph may be misleading.", xref = "paper", yref = "paper"))
+                            yaxis2 = list(side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color))) %>%
+                        layout(annotations = list(x = 0, y = -0.1, showarrow=F, font=list(size = 9, color = "red"), text = "Note: Plotting two traces with different scales on the same graph may be misleading.", xref = "paper", yref = "paper"))
                 }
             }
 

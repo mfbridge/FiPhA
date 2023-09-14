@@ -52,7 +52,7 @@ data.ui = nav("Datasets",
                                             list(type="theme", id = "data_theme", text = "Theme"),
                                             list(type="hr"),
                                             list(type="line-size+color", size.id="data_y_size", color.id="data_y_color", text="Y Size & Color", size.value=0.15, color.value="#000000"),
-                                            list(type="line-size+color", size.id="data_y2_size", color.id="data_y2_color", text="Y2 Size & Color", size.value=0.15, color.value="#C3FCE8"),
+                                            list(type="line-size+color", size.id="data_y2_size", color.id="data_y2_color", text="Y2 Size & Color", size.value=0.15, color.value="#ff0000"),
                                             list(type="hr"),
                                             list(type="checkbox", id = "data_scale_y_y2", text = "plot percent change", checked = F))
                                     )

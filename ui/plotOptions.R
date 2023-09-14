@@ -88,7 +88,7 @@ plotOptions = function(id, label = NULL, options = list(),
                fluidRow(style=row.css,
                         column(4, prettyCheckbox(options[[e]]$show.id, "\u03bc \u00b1")),
                         column(4, numericInput(options[[e]]$n.id, NULL, options[[e]]$n.value, min = 0, max = Inf, step = 0.01)),
-                        column(4, pickerInput(options[[e]]$n.f, NULL, choices = list("SD", "SE"), selected = "SE"))
+                        column(4, pickerInput(options[[e]]$n.f, NULL, choices = list("SD", "SE"), selected = "SD"))
                )
             )
         } else if (options[[e]]$type == "checkbox+text") {

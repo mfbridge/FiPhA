@@ -34,7 +34,11 @@ observeEvent(input$data_import_action_r, {
         obj = readRDS(fi$datapath)
 
         for (n in names(obj)) {
-            print(n)
+            if (n == "raw") {
+                for (j in names(obj$raw)) {
+                    obj$raw[[j]] = copy(obj$raw[[j]]) # loaded from disk, need to set .internal.selfref ptr somehow
+                }
+            }
             data[[n]] = obj[[n]]
         }
     }
