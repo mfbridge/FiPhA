@@ -1,0 +1,5 @@
+Name: Start FiPhA
+Description: Starts the FiPhA shiny application.
+Binding: FiPhA
+Interactive: true
+
