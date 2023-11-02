@@ -118,26 +118,27 @@ output$data_plot = renderPlotly({
             .preview$ds = NULL
 
             .gg = ggplot(.dt, aes(x = X)) +
-                geom_path(aes(y = Y, color = input$data_plot_y[1]), size = input$data_y_size) +
+                geom_path(aes(y = Y), color = input$data_y_color, size = input$data_y_size) +
                 (get(paste0("theme_", input$data_theme)))(base_size = input$data_font_size) +
                 labs(x = ifelse(input$data_plot_x == "(time)", "Time", input$data_plot_x), y = NULL) + #paste0(input$data_plot_y, collapse = ", ")) +
-                scale_color_manual(values = c(input$data_y_color, input$data_y2_color), guide = guide_legend(title = NULL)) +
+                #scale_color_manual(values = c(input$data_y_color, input$data_y2_color), guide = guide_legend(title = NULL)) +
                 theme(legend.position = "bottom", text = element_text(size = input$data_font_size, family = input$data_font_family))
 
             .ggplotly = ggplotly(.gg) %>%
                 config() %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
-                       xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
+                       xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto", font = list(size=input$data_font_size, color = input$data_y_color), title = input$data_plot_y[[1]]))
+
+            .ggplotly$x$data[[1]]$name = input$data_plot_y[[1]]
 
             if (use.y2) {
                 .ggplotly = .ggplotly %>% add_trace(x = .dt[, X], y = .dt[, Y2], name=input$data_plot_y[2], yaxis= ifelse(input$data_scale_y_y2, "y", "y2"), mode="lines", type = "scatter",
-                        line=list(color = input$data_y2_color, width = input$data_y2_size*2))
+                        line=list(color = input$data_y2_color, width = input$data_y2_size*2)) %>% layout(yaxis2 = list(title=input$data_plot_y[2])) #, color = input$data_y2_color))
 
                 if (!input$data_scale_y_y2) {
                     .ggplotly = .ggplotly %>%
                         layout(margin = list(t = 0, b = 0, l = 80, r = 80),
-                            yaxis2 = list(side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color))) %>%
-                        layout(annotations = list(x = 0, y = -0.1, showarrow=F, font=list(size = 9, color = "red"), text = "Note: Plotting two traces with different scales on the same graph may be misleading.", xref = "paper", yref = "paper"))
+                            yaxis2 = list(side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color)))
                 }
             }
 

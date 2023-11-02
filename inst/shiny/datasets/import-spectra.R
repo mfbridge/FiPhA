@@ -6,6 +6,38 @@ spectra.preview = reactiveValues()
 shinyFileChoose(input, "data_import_spectrometry_file", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("txt"))
 shinyFileChoose(input, "data_import_spectrometry_reference", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("csv"))
 
+observeEvent(input$data_spectra_preview_file, {
+    if (is.integer(input$data_import_spectrometry_file)) {
+
+    } else {
+        withProgress({
+            fi = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_spectrometry_file)
+
+            preview.file = as.data.table(fi)[name == input$data_spectra_preview_file, datapath]
+
+            # ext= txt
+            wavelengths = as.character(read_tsv(preview.file,
+               col_names = F,
+               n_max = 1,
+               na = default$missing_values,
+               skip = input$data_spectra_header_row - 1,
+               show_col_types = F))
+
+            wl = as.numeric(wavelengths[3:length(wavelengths)])
+            # updateNumericInput(session, "data_spectra_minimum", value = min(wl))
+            # updateNumericInput(session, "data_spectra_maximum", value = max(wl))
+
+            # only ever previewing the first file
+            preview.data = as.data.table(read_tsv(preview.file, col_names = F, n_max = 1, na = default$missing_values, skip = input$data_spectra_data_row, show_col_types = F))
+
+            ys = melt(preview.data, measure.vars = 3:(2+length(wl)))
+
+            spectra.preview$data.series = ys$value
+            spectra.preview$wavelengths = wl
+        }, message = "creating preview data...")
+    }
+})
+
 observeEvent(c(input$data_import_spectrometry_file, input$data_spectra_header_row, input$data_spectra_data_row), {
     #
     if (is.integer(input$data_import_spectrometry_file)) {
@@ -18,27 +50,11 @@ observeEvent(c(input$data_import_spectrometry_file, input$data_spectra_header_ro
             } else {
                 output$data_import_spectrometry_filename = renderText(sprintf("%0.0f files selected", nrow(fi)))
             }
-            # ext= txt
-            wavelengths = as.character(read_tsv(fi[1, ]$datapath,
-               col_names = F,
-               n_max = 1,
-               na = default$missing_values,
-               skip = input$data_spectra_header_row - 1,
-               show_col_types = F))
+            #browser()
+            fit = as.data.table(fi)
+            updatePickerInput(session, "data_spectra_preview_file", choices = fit[, name], selected = fit[1, name])
 
-            wl = as.numeric(wavelengths[3:length(wavelengths)])
-            # updateNumericInput(session, "data_spectra_minimum", value = min(wl))
-            # updateNumericInput(session, "data_spectra_maximum", value = max(wl))
-
-            # only ever previewing the first file
-            preview.data = as.data.table(read_tsv(fi[1, ]$datapath, col_names = F, n_max = 1, na = default$missing_values, skip = input$data_spectra_data_row, show_col_types = F))
-
-            ys = melt(preview.data, measure.vars = 3:(2+length(wl)))
-
-            spectra.preview$data.series = ys$value
-            spectra.preview$wavelengths = wl
-
-        }, message = "importing wavelength information...")
+        }, message = "parsing header information...")
     }
 })
 
@@ -84,7 +100,7 @@ observe({
     req(!is.integer(input$data_import_spectrometry_reference))
     req(spectra.preview$wavelengths, spectra.preview$data.series)
 
-    output$data_spectra_linear_preview = renderPlot({
+    output$data_spectra_linear_preview = renderPlotly({
 
         .data = data.table(x = spectra.preview$wavelengths, y = spectra.preview$data.series)
         .data2 = data.table(y = spectra.preview$data.series)
@@ -124,14 +140,15 @@ observe({
                 use.names = F)
         }
 
-        ggplot(.data, aes(x = x, y = y)) +
-            geom_path(size = 0.5) +
+        ggplotly(ggplot(.data, aes(x = x, y = y)) +
+            geom_path(size = 0.2) +
             theme_minimal(11) +
             labs(x = "Wavelength (nm)", y = NULL) +
             coord_cartesian(expand = F) +
-            geom_path(aes(x = x, y = y, color = name), .data3, inherit.aes = F, alpha = 0.85, size = 1) +
+            geom_path(aes(x = x, y = y, color = name), .data3, size = 0.4, inherit.aes = F, alpha = 0.85) +
             scale_color_viridis_d(begin = 0.2, end = 0.8, option = "turbo") +
             theme(axis.text.y = element_blank())
+        )
     })
 })
 
@@ -216,6 +233,10 @@ observeEvent(input$data_new_spectra, {
                 column(3, pickerInput("data_spectra_method", "Method", c("summary statistic"="2-color", "linear unmixing"="linear"), width = "100%"))
             ),
 
+            fluidRow(
+                column(12, pickerInput("data_spectra_preview_file", label = "Preview File", choices = c(), width = "100%"))
+            ),
+
             tags$hr(style = "margin-top: 0rem; margin-bottom: 0.5rem;"),
 
             div(id = "spectra_auc",
@@ -248,7 +269,7 @@ observeEvent(input$data_new_spectra, {
                     column(10, verbatimTextOutput("data_import_spectrometry_reference_filename"))
                 ),
                 fluidRow(
-                    column(12, plotOutput("data_spectra_linear_preview", height = "200px")),
+                    column(12, plotlyOutput("data_spectra_linear_preview", height = "200px")),
 
                 )
             ),

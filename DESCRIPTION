@@ -37,3 +37,7 @@ Imports:
     shinyWidgets,
     stringr,
     writexl
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

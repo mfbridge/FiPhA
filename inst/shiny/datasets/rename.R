@@ -60,19 +60,29 @@ observeEvent(input$data_append, {
     updatePickerInput(session, "data_append_dest", choices = names(data$raw))
 
     showModal(
-        modalDialog(title = "Rename...", size = "l", fade = F, footer = tagList(modalButton("Cancel"), actionButton("data_append_finish", "Finish")),
+        modalDialog(title = "append rows", size = "l", fade = F, footer = tagList(modalButton("Cancel"), actionButton("data_append_finish", "Finish")),
             fluidRow(
-                column(4, pickerInput("data_append_src", "Source Dataset", c(), width = "100%")),
-                column(4, pickerInput("data_append_dest", "Destination Dataset", c(), width = "100%")),
-                column(4, numericInput("data_append_freq", "New Time Frequency (Hz)", 25, min = 0, step = 1))
+                column(3, pickerInput("data_append_dest", "Base dataset", c(), width = "100%")),
+                column(3, pickerInput("data_append_src", "Appended dataset", c(), width = "100%")),
+                column(3, textInput("data_append_new", "Output Name", "new dataset", width = "100%")),
+                column(3, numericInput("data_append_freq", "New Time Frequency (Hz)", 25, min = 0, step = 1))
             )
         )
     )
 })
 
 observeEvent(input$data_append_finish, {
-    data$raw[[input$data_append_dest]] = rbindlist(list(data$raw[[input$data_append_dest]], data$raw[[input$data_append_src]]))
-    data$raw[[input$data_append_dest]][, (data$meta[[input$data_append_dest]]$time) := (.I - 1) / input$data_append_freq]
+    # data$raw[[input$data_append_dest]] = rbindlist(list(data$raw[[input$data_append_dest]], data$raw[[input$data_append_src]]))
+    # data$raw[[input$data_append_dest]][, (data$meta[[input$data_append_dest]]$time) := (.I - 1) / input$data_append_freq]
+
+    data$raw[[input$data_append_new]] = rbindlist(list(data$raw[[input$data_append_dest]], data$raw[[input$data_append_src]]))
+    data$raw[[input$data_append_new]][, `(time)` := (.I - 1) / input$data_append_freq]
+
+    browser()
+
+    data$analysis[[input$data_append_new]] = list()
+    data$meta[[input$data_append_new]] = list(file = "<appended datasets>", path = "", time = "(time)")
+    updatePickerInput(session, "data_dataset", choices = names(data$meta), selected = input$data_dataset)
 
     removeModal()
 })

@@ -12,12 +12,12 @@ data.ui = nav("Datasets",
                    actionLink("data_new_spectra", HTML("spectrometer recording (*.txt)")),
                    actionLink("data_tdt", "fiber photometry gizmo (*.tsq/*.tev)"),
                    actionLink("data_rds", "previous session (*.Rds)"),
-                   #actionLink("data_new_spectra", "dataset from raw spectra (*.???)"),
+                   actionLink("data_sample", "sample dataset"),
                    circle = F, label = "Import", size = "xs", inline = T, status = "info"
                ),
 
                dropdownButton(
-                   actionLink("data_unaligned", "join/align dataset (*.xlsx, *.csv)"),
+                   actionLink("data_unaligned", "join/align file (*.xlsx, *.csv)"),
                    actionLink("data_append", "append dataset rows"),
                    actionLink("data_rename", "rename a variable/dataset"),
                    tags$hr(style="margin: 0.4rem;"),
@@ -43,8 +43,10 @@ data.ui = nav("Datasets",
         tabPanel("Preview",
                  tags$br(),
                  fluidRow(
-                     column(5, pickerInput("data_plot_x", NULL, c(), width = "100%", options = list(title="X Axis Variable"))),
-                     column(5, pickerInput("data_plot_y", NULL, c(), width = "100%", multiple = T, options = list(`max-options`=2, title="Y Axis Variable(s)"))),
+                     #column(5, pickerInput("data_plot_x", NULL, c(), width = "100%", options = list(title="X Axis Variable"))),
+                     column(5, virtualSelectInput("data_plot_x", NULL, c(), width = "100%", multiple = F, placeholder = "X Axis Variable")),
+                     #column(5, pickerInput("data_plot_y", NULL, c(), width = "100%", multiple = T, options = list(`max-options`=2, title="Y Axis Variable(s)"))),
+                     column(5, virtualSelectInput("data_plot_y", NULL, c(), width = "100%", multiple = T, maxValues = 2, placeholder = "Y Axis Variable(s)")), # options = list(`max-options`=2, title="Y Axis Variable(s)"))),
                      column(2, dropdown(size = "xs", status = "primary", icon = icon("cogs"), right = T,
                                         plotOptions("data_plot_opts", options = list(
                                             list(type="title", text="Plot Options"),

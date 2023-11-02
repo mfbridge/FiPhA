@@ -24,6 +24,26 @@ observeEvent(input$data_import_file_r, {
     }
 })
 
+observeEvent(input$data_sample, {
+    obj = readRDS(system.file("extdata/FIPHA_SAMPLE_DATASET.rds", package = "FiPhA"))
+
+    for (n in names(obj)) {
+        if (n == "raw") {
+            for (j in names(obj$raw)) {
+                obj$raw[[j]] = copy(obj$raw[[j]]) # loaded from disk, need to set .internal.selfref ptr somehow
+            }
+        }
+        data[[n]] = obj[[n]]
+    }
+
+    updatePickerInput(session, "data_dataset", choices = names(data$meta))
+    updatePickerInput(session, "heatmap_dataset", choices = names(data$meta))
+    updatePickerInput(session, "heatmap2_dataset", choices = names(data$meta))
+    updatePickerInput(session, "events_dataset", choices = names(data$meta))
+    updatePickerInput(session, "power_dataset", choices = names(data$meta))
+    updatePickerInput(session, "lag_dataset", choices = names(data$meta))
+    updatePickerInput(session, "summary_dataset", choices = names(data$meta))
+})
 
 observeEvent(input$data_import_action_r, {
     if (is.integer(input$data_import_file_r)) {

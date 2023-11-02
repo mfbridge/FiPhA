@@ -15,7 +15,7 @@ observeEvent(input$data_unaligned_time_unit, {
 })
 
 
-observeEvent(input$data_unaligned_file, {
+observeEvent(c(input$data_unaligned_file, input$data_unaligned_header_row, input$data_unaligned_data_row), {
     if (is.integer(input$data_unaligned_file)) {
         # nothing selected
     } else {
@@ -168,8 +168,9 @@ observeEvent(input$data_unaligned, {
     updatePickerInput(session, "data_unaligned_dataset", choices = names(data$meta))
 
     showModal(
-        modalDialog(title = "Append (un)aligned dataset", size = "l", fade = F, footer = tagList(modalButton("Close"), actionButton("data_unaligned_finish", "Append")),
-            pickerInput("data_unaligned_dataset", NULL, choices = c()),
+        modalDialog(title = "Join/align file", size = "l", fade = F, footer = tagList(modalButton("Close"), actionButton("data_unaligned_finish", "Append")),
+            pickerInput("data_unaligned_dataset", "Base Dataset", choices = c()),
+            tags$label("File to align"), tags$br(),
             verbatimTextOutput("data_unaligned_filename"),
             fluidRow(
                 column(3, shinyFilesButton("data_unaligned_file", label = "Browse...", title = "", multiple = F)),
@@ -188,4 +189,9 @@ observeEvent(input$data_unaligned, {
             verbatimTextOutput("data_unaligned_log")
         )
     )
+
+    updatePickerInput(session, "data_unaligned_time_unit", selected = "var")
+    shinyjs::show("data_unaligned_time")
+    shinyjs::hide("data_unaligned_frequency")
+    shinyjs::hide("data_unaligned_start")
 })
