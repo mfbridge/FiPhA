@@ -25,7 +25,7 @@ ui = tagList(useShinyjs(),
         tags$link(rel = "stylesheet", type="text/css", href="style.css")
     ),
 
-    page_navbar(title = HTML(sprintf("FiPhA <span id='version'>%s</span>", app.version)), theme = bs_theme(bootswatch = "yeti", font_scale = 1), inverse = F,
+    page_navbar(title = HTML(sprintf("FiPhA v%s", packageVersion("FiPhA"))), theme = bs_theme(bootswatch = "yeti", font_scale = 1), inverse = F,
         data.ui,
         events.ui,
         analysis.ui,

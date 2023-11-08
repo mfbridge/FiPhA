@@ -1,11 +1,11 @@
 Package: FiPhA
 Type: Package
 Title: Fiber Photometry Analysis
-Version: 1.0
+Version: 1.0.0
 Author: Matt Bridge
 Maintainer: Matt Bridge <matthew.bridge@dlhcorp.com>
 Description: A Shiny application for processing and analyzing event-based fiber photometry data in neurobehavior experiments.
-License: MIT + License
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 

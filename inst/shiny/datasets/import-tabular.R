@@ -1,6 +1,6 @@
 # import-tabular.R
 
-shinyFileChoose(input, "data_new_xlcsv_file", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("csv", "xlsx"))
+shinyFileChoose(input, "data_new_xlcsv_file", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("csv", "xlsx"))
 
 observeEvent(input$data_new_xlcsv, {
     output$data_new_log = renderText({ "Ready to import" })

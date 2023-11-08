@@ -1,7 +1,7 @@
 # shiny stuff for saving a dataset in the data tab
 
-shinyFileSave(input, "data_save", root=c(`Working Directory`='.', getVolumes()()), filetypes=c("csv", "xlsx"))
-shinyFileSave(input, "data_saveall", root=c(`Working Directory`='.', getVolumes()()), filetypes=c("xlsx"))
+shinyFileSave(input, "data_save", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("csv", "xlsx"))
+shinyFileSave(input, "data_saveall", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("xlsx"))
 
 observeEvent(input$data_save, {
     if (is.integer(input$data_save)) {

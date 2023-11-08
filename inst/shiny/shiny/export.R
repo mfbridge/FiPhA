@@ -1,8 +1,8 @@
 # export.R
 
 
-shinyFileSave(input, "export_r", root=c(`Working Directory`='.', getVolumes()()), filetypes=c("rds"))
-shinyFileSave(input, "export_excel", root=c(`Working Directory`='.', getVolumes()()), filetypes=c("xlsx"))
+shinyFileSave(input, "export_r", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("rds"))
+shinyFileSave(input, "export_excel", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("xlsx"))
 
 observeEvent(input$export_format, {
     shinyjs::hide("export_excel_opts")

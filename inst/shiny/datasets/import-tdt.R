@@ -2,7 +2,7 @@
 
 .tdt.temp = reactiveValues()
 
-shinyDirChoose(input, "data_import_tdt_dir", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("tsq","tev"))
+shinyDirChoose(input, "data_import_tdt_dir", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("tsq","tev"))
 
 observeEvent(input$data_tdt, {
     .tdt.temp$headers = NULL

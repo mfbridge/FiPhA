@@ -3,8 +3,8 @@
 spectra.reference = reactiveValues()
 spectra.preview = reactiveValues()
 
-shinyFileChoose(input, "data_import_spectrometry_file", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("txt"))
-shinyFileChoose(input, "data_import_spectrometry_reference", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("csv"))
+shinyFileChoose(input, "data_import_spectrometry_file", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("txt"))
+shinyFileChoose(input, "data_import_spectrometry_reference", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("csv"))
 
 observeEvent(input$data_spectra_preview_file, {
     if (is.integer(input$data_import_spectrometry_file)) {

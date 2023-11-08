@@ -2,9 +2,7 @@
 updateCurrentVariableSelections = function () {
 
     variables = names(data$raw[[input$data_dataset]])
-    #updatePickerInput(session, "data_plot_x", choices = variables, selected = data$meta[[input$data_dataset]]$time)
     updateVirtualSelect("data_plot_x", choices = variables, selected = input$data_plot_x)
-    #updatePickerInput(session, "data_plot_y", choices = variables, selected = input$data_plot_y)
     updateVirtualSelect("data_plot_y", choices = variables, selected = input$data_plot_y)
     updatePickerInput(session, "data_time", choices = variables, selected = data$meta[[input$data_dataset]]$time)
     updateEventsDatasetPicker()
@@ -13,9 +11,7 @@ updateCurrentVariableSelections = function () {
 observeEvent(input$data_dataset, {
     if (input$data_dataset %in% names(data$meta)) {
         variables = names(data$raw[[input$data_dataset]])
-        #updatePickerInput(session, "data_plot_x", choices = c(variables), selected = data$meta[[input$data_dataset]]$time)
         updateVirtualSelect("data_plot_x", choices = variables, selected = data$meta[[input$data_dataset]]$time)
-        #updatePickerInput(session, "data_plot_y", choices = c(variables), selected = input$data_plot_y)
         updateVirtualSelect("data_plot_y", choices = variables, selected = input$data_plot_y)
         updateTextInput(session, "data_source", value = data$meta[[input$data_dataset]]$path)
         updatePickerInput(session, "data_time", choices = variables, selected = data$meta[[input$data_dataset]]$time)

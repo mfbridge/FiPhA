@@ -1,5 +1,3 @@
-app.version = "1.0"
-
 directories = c(
     # the first entry listed here will be the default one, otherwise it will be the working directory
     # "name goes here"="c:/R-friendly/path/goes/here"

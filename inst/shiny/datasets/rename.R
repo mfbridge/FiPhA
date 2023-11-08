@@ -24,10 +24,7 @@ observeEvent(input$data_rename_finish, {
         ds.name = input$data_rename_new_name
     }
 
-    variables = names(data$raw[[ds.name]])
-    updatePickerInput(session, "data_plot_x", choices = variables, selected = input$data_plot_x)
-    updatePickerInput(session, "data_plot_y", choices = variables, selected = input$data_plot_y)
-    updatePickerInput(session, "data_time", choices = variables, selected = input$data_time)
+    updateCurrentVariableSelections()
 
     removeModal()
 })

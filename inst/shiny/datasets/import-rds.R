@@ -1,6 +1,6 @@
 # import-rds.R
 
-shinyFileChoose(input, "data_import_file_r", root=c(directories, `Working Directory`='.', getVolumes()()), filetypes=c("rds"))
+shinyFileChoose(input, "data_import_file_r", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("rds"))
 
 observeEvent(input$data_rds, {
     output$data_import_r_filename = renderText("select a *.Rds file from a previous session")
