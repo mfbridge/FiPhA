@@ -1,8 +1,7 @@
 directories = c(
-    # the first entry listed here will be the default one, otherwise it will be the working directory
-    # "name goes here"="c:/R-friendly/path/goes/here"
-    #"Downloads"="C:\\Users\\matthew.bridge\\Downloads"
+
 )
+
 
 default = list(
     # values to interpret as missing when importing csv/xlsx files
@@ -12,11 +11,16 @@ default = list(
     fonts = c("Arial", "Open Sans", "Times New Roman", "Courier New",  "Garamond", "Verdana", "Georgia", "Comic Sans MS"),
 
     # guesses for initial parameter values for nls2
-    exp_model_start_params = data.frame(
-        alpha = c(10, 1, 100, 200, 4000, 1, 1),
-        beta = c(1, 1, -10, -0.1, -0.001, -1, 1),
-        theta = c(0, 1, 1, 0, 1, 1, -100)
-    ),
+    # exp_model_start_params = data.frame(
+    #     alpha = c(10, 1, 100, 200, 4000, 1, 1),
+    #     beta = c(1, 1, -10, -0.1, -0.001, -0.1, 0.00001),
+    #     theta = c(0, 1, 1, 0, 1, 1, -100)
+    # ),
+    # exp_model_start_params = data.frame(
+    #     alpha = c(0, 1e4),
+    #     beta = c(-1, -0.001),
+    #     theta = c(-10000, 10000)
+    # ),
 
     # data import defaults
     import_header_row = 1,
@@ -52,63 +56,17 @@ default = list(
     )
 )
 
-packages = c(
-    # load every shiny package in existence
-    #"shinyAce",
-    "shiny",
-    "shinycssloaders",
-    "shinyjs",
-    "bslib",
-    "shinyFiles",
-    "shinyWidgets",
-    #"shinyhelper",
-    "shinyHugePlot",
+# load imports for shiny app
+packages = stringr::str_split(packageDescription("FiPhA")$Imports, ",\n")[[1]]
 
-    # data manipulation and presentation
-    "data.table",
-    #"DT",
-    "excelR",
-    "stringr",
-    "scales",
-
-    # data fi le processing
-    "readr",
-    "readxl",
-    "writexl",
-
-    # plotting
-    "ggplot2",
-    "ggrepel",
-    "plotly",
-    "ggh4x",
-    "ggprism",
-    "patchwork",
-
-    # model parameter grid search
-    "nls2",
-
-    # parallel processing
-    #"parallel",
-
-    # signal processing
-    "gsignal",
-
-    # misc
-    "cli",
-    "bit64",
-    "checkmate",
-    "lubridate",
-    "R.utils",
-    "assertthat"
-)
-
-# install binary packages if necessary
 for (p in packages) {
     if (!require(p, character.only = T)) {
-        #install.packages(p, type = "binary")
         library(p, character.only = T)
     }
 }
+
+root.dirs = c(directories, `Home`=path.expand("~"), getVolumes()())
+
 
 # cluster.n.threads = detectCores(logical = F)
 # printf("[parallel] initializing %d workers...\n", cluster.n.threads)

@@ -22,74 +22,97 @@ runFits = function() {
     plot.data = data.table()
     models = list()
 
-    for (v in input$data_baseline_var) {
-        .X = data$raw[[input$data_dataset]][, get(data$meta[[input$data_dataset]]$time)]
-        .Y = data$raw[[input$data_dataset]][, get(v)]
+    withProgress({
+        for (v in input$data_baseline_var) {
 
-        Yhat = NULL
-        model = NULL
+            incProgress(amount = 1, detail = v)
 
-        if (input$data_baseline_model == "exp") {
-            if (input$data_baseline_params == "least squares") {
-                withProgress({
+            .X = data$raw[[input$data_dataset]][, get(data$meta[[input$data_dataset]]$time)]
+            .Y = data$raw[[input$data_dataset]][, get(v)]
+
+            Yhat = NULL
+            model = NULL
+
+            if (input$data_baseline_model == "exp") {
+                if (input$data_baseline_params == "least squares") {
+                    #browser()
+                    models[[v]] = list(converged = F)
+
                     try({
-                        model = nls2(Y ~ alpha * exp(beta * X) + theta, start = default$exp_model_start_params, data = data.frame(X = .X, Y = .Y), na.action = "na.omit")
+
+                    model = nlsr(Y ~ alpha * exp(beta * X) + theta,
+                        start = c(alpha = 100.0, beta = -0.01, theta = 1000.0),
+                        data = data.frame(X = .X, Y = .Y),
+                        control = nlsr.control(list(femax = 1000, jemax = 500))
+                    )
+
+                        models[[v]]$converged = model$convInfo$isConv
+
+                    if (models[[v]]$converged) {
                         Yhat = predict(model, list(X = .X))
 
-                        print(AIC(model))
-                        print(summary(model))
+                        #print(AIC(model))
+                        #print(summary(model))
+                        print(coefficients(model))
+                        #View(model)
+                        #browser()
 
                         updateNumericInput(session, "data_baseline_exp_alpha", value = coefficients(model)[["alpha"]])
                         updateNumericInput(session, "data_baseline_exp_beta", value = coefficients(model)[["beta"]])
                         updateNumericInput(session, "data_baseline_exp_theta", value = coefficients(model)[["theta"]])
 
-                        models[[v]] = list(type = "exponential", a = coefficients(model)[["alpha"]], b = coefficients(model)[["beta"]], c = coefficients(model)[["theta"]])
+                        models[[v]]$type = "exponential"
+                        models[[v]]$a = coefficients(model)[["alpha"]]
+                        models[[v]]$b = coefficients(model)[["beta"]]
+                        models[[v]]$c = coefficients(model)[["theta"]]
+                    }
+
                     })
-                }, message = "Fitting...", detail = v)
 
 
-            } else {
-                alpha = input$data_baseline_exp_alpha
-                beta = input$data_baseline_exp_beta
-                theta = input$data_baseline_exp_theta
+                } else {
+                    alpha = input$data_baseline_exp_alpha
+                    beta = input$data_baseline_exp_beta
+                    theta = input$data_baseline_exp_theta
 
-                # using user-specified parameters instead
-                Yhat = alpha * exp(beta * .X) + theta
+                    # using user-specified parameters instead
+                    Yhat = alpha * exp(beta * .X) + theta
 
-                models[[v]] = list(type = "exponential", a = alpha, b = beta, c = theta)
+                    models[[v]] = list(type = "exponential", a = alpha, b = beta, c = theta)
+                }
+
+            } else if (input$data_baseline_model == "lin") {
+                if (input$data_baseline_params == "least squares") {
+                    models[[v]] = list(converged = T) # assume
+
+                    model = lm(Y ~ X, data = data.frame(X = .X, Y = .Y), na.action = "na.omit")
+                    Yhat = predict(model, list(X = .X))
+
+                    print(summary(model))
+
+                    updateNumericInput(session, "data_baseline_lin_slope", value = coefficients(model)[[2]])
+                    updateNumericInput(session, "data_baseline_lin_intercept", value = coefficients(model)[[1]])
+
+                    models[[v]]$type = "linear"
+                    models[[v]]$m = coefficients(model)[[2]]
+                    models[[v]]$b = coefficients(model)[[1]]
+
+                } else {
+                    slope = input$data_baseline_lin_slope
+                    intercept = input$data_baseline_lin_intercept
+
+                    Yhat = slope * .X + intercept
+
+                    models[[v]] = list(type = "linear", m = slope, b = intercept)
+                }
             }
 
-        } else if (input$data_baseline_model == "lin") {
-            if (input$data_baseline_params == "least squares") {
-                withProgress({
-                    try({
-                        model = lm(Y ~ X, data = data.frame(X = .X, Y = .Y), na.action = "na.omit")
-                        Yhat = predict(model, list(X = .X))
-
-                        print(AIC(model))
-
-                        updateNumericInput(session, "data_baseline_lin_slope", value = coefficients(model)[[2]])
-                        updateNumericInput(session, "data_baseline_lin_intercept", value = coefficients(model)[[1]])
-
-                        models[[v]] = list(type = "linear", m = coefficients(model)[[2]], b = coefficients(model)[[1]])
-                    })
-                }, message = "Fitting...", detail = v)
-
-            } else {
-                slope = input$data_baseline_lin_slope
-                intercept = input$data_baseline_lin_intercept
-
-                Yhat = slope * .X + intercept
-
-                models[[v]] = list(type = "linear", m = slope, b = intercept)
+            if (!is.null(Yhat)) {
+                plot.data = rbindlist(list(plot.data, data.table(x = .X, y = .Y, yhat = Yhat, ydiff = .Y - Yhat, var = v, type = models[[v]]$type)))
             }
-        }
 
-        if (!is.null(Yhat)) {
-            plot.data = rbindlist(list(plot.data, data.table(x = .X, y = .Y, yhat = Yhat, ydiff = .Y - Yhat, var = v)))
         }
-
-    }
+    }, message = "Fitting models...", min = 0, max = length(input$data_baseline_var))
 
     list(data = plot.data, models = models)
 }
@@ -113,28 +136,24 @@ observeEvent(c(input$data_baseline_var, input$data_baseline_model, input$data_ba
        plot.data = runFits()
     }
 
-    if (length(plot.data$models) != length(input$data_baseline_var)) {
-        output$data_baseline_plot = plotlyMessage("Could not find model parameters for some of the selected variable(s).")
-    } else {
+    req(!is.null(plot.data))
 
-        # generate plot
-        output$data_baseline_plot = renderPlotly({
-            .gg = ggplotly({
+    # generate plot
+    output$data_baseline_plot = renderPlotly({
+        .gg = ggplotly({
+            ggplot(mapping = aes(x = x, y = y)) +
+                geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$ydiff, var = plot.data$data$var, type="Model Residuals"), size = 0.2) +
+                geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$y, var = plot.data$data$var, type="Fitted Model"), size = 0.2) +
+                geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$yhat, var = plot.data$data$var, type="Fitted Model"), size = 0.3, color = "red") +
+                facet_wrap2(~ var + type, ncol = 2, scales = "free_y") +
+                theme_minimal() + theme(axis.text.x = element_blank(), panel.spacing.x = unit(0, "pt"), panel.spacing.y = unit(18, "pt")) + labs(x = NULL, y = NULL)
 
-                ggplot(mapping = aes(x = x, y = y)) +
-                    geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$ydiff, var = plot.data$data$var, type="Model Residuals"), size = 0.2) +
-                    geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$y, var = plot.data$data$var, type="Fitted Model"), size = 0.2) +
-                    geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$yhat, var = plot.data$data$var, type="Fitted Model"), size = 0.3, color = "red") +
-                    facet_wrap2(~ var + type, ncol = 2, scales = "free_y") +
-                    theme_minimal() + theme(axis.text.x = element_blank(), panel.spacing.x = unit(0, "pt"), panel.spacing.y = unit(18, "pt")) + labs(x = NULL, y = NULL)
+        }) %>% config() %>%
+            layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
+            toWebGL2()
 
-            }) %>% config() %>%
-                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
-                toWebGL2()
-
-            .gg
-        })
-    }
+        .gg
+    })
 })
 
 observeEvent(input$data_baseline_finish, {

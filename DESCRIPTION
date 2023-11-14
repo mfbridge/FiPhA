@@ -1,7 +1,7 @@
 Package: FiPhA
 Type: Package
 Title: Fiber Photometry Analysis
-Version: 1.0.0
+Version: 1.0
 Author: Matt Bridge
 Maintainer: Matt Bridge <matthew.bridge@dlhcorp.com>
 Description: A Shiny application for processing and analyzing event-based fiber photometry data in neurobehavior experiments.
@@ -22,7 +22,7 @@ Imports:
     ggrepel,
     gsignal,
     lubridate,
-    nls2,
+    nlsr,
     patchwork,
     plotly,
     R.utils,
@@ -38,6 +38,8 @@ Imports:
     stringr,
     writexl
 Suggests: 
+    devtools,
     knitr,
+    jsonlite,
     rmarkdown
 VignetteBuilder: knitr
