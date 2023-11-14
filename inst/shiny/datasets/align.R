@@ -1,6 +1,6 @@
 
 
-shinyFileChoose(input, "data_unaligned_file", root=c(`Working Directory`='.', getVolumes()()), filetypes=c("csv", "xlsx"))
+shinyFileChoose(input, "data_unaligned_file", root=root.dirs, filetypes=c("csv", "xlsx"))
 
 observeEvent(input$data_unaligned_time_unit, {
     if (input$data_unaligned_time_unit == "freq") {
@@ -19,7 +19,7 @@ observeEvent(c(input$data_unaligned_file, input$data_unaligned_header_row, input
     if (is.integer(input$data_unaligned_file)) {
         # nothing selected
     } else {
-        fileinfo = parseFilePaths(root=c(`Working Directory`='.', getVolumes()()), selection = input$data_unaligned_file)
+        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_unaligned_file)
         output$data_unaligned_filename = renderText({ sprintf("%s", paste0(fileinfo$name, collapse=", ")) })
 
         tryCatch({
@@ -63,7 +63,7 @@ observeEvent(input$data_unaligned_finish, {
 if (is.integer(input$data_unaligned_file)) {
         # nothing selected
     } else {
-        fileinfo = parseFilePaths(root=c(`Working Directory`='.', getVolumes()()), selection = input$data_unaligned_file)
+        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_unaligned_file)
         output$data_unaligned_filename = renderText({ sprintf("%s", paste0(fileinfo$name, collapse=", ")) })
 
         tryCatch({

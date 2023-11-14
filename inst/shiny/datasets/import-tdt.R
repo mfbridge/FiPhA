@@ -2,7 +2,7 @@
 
 .tdt.temp = reactiveValues()
 
-shinyDirChoose(input, "data_import_tdt_dir", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("tsq","tev"))
+shinyDirChoose(input, "data_import_tdt_dir", root=root.dirs, filetypes=c("tsq","tev"))
 
 observeEvent(input$data_tdt, {
     .tdt.temp$headers = NULL
@@ -25,7 +25,7 @@ observeEvent(input$data_import_tdt_dir, {
     if (is.integer(input$data_import_tdt_dir)) {
 
     } else {
-        di = parseDirPath(roots=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_tdt_dir)
+        di = parseDirPath(roots=root.dirs, selection = input$data_import_tdt_dir)
         output$data_import_tdt_path = renderText(file.path(di))
         tsq = parse_tsq(file.path(di, dir(di, "*.tsq")))
         only.ch = tsq[!(code %in% c(1, 2)), .(code_c, nch = length(unique(channel)), freq = unique(frequency)), by = .(code_c)][nch == 1 & freq > 0,]
@@ -46,7 +46,7 @@ observeEvent(input$data_import_tdt_action, {
     } else {
         req(.tdt.temp$headers)
 
-        di = parseDirPath(roots=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_tdt_dir)
+        di = parseDirPath(roots=root.dirs, selection = input$data_import_tdt_dir)
         output$data_import_tdt_path = renderText(file.path(di))
         tev = read.tdt(file.path(di), streams = input$data_import_tdt_streams, .cached.headers = .tdt.temp$headers)
         .str = file.path(di, dir(di, "*.tsq"))

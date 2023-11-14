@@ -1,13 +1,13 @@
 # shiny stuff for saving a dataset in the data tab
 
-shinyFileSave(input, "data_save", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("csv", "xlsx"))
-shinyFileSave(input, "data_saveall", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("xlsx"))
+shinyFileSave(input, "data_save", root=root.dirs, filetypes=c("csv", "xlsx"))
+shinyFileSave(input, "data_saveall", root=root.dirs, filetypes=c("xlsx"))
 
 observeEvent(input$data_save, {
     if (is.integer(input$data_save)) {
         # nothing selected
     } else {
-        fileinfo = parseSavePath(root=c(`Working Directory`='.', getVolumes()()), selection = input$data_save)
+        fileinfo = parseSavePath(root=root.dirs, selection = input$data_save)
         name = input$data_dataset
 
         if (str_length(name) > 0) {
@@ -27,7 +27,7 @@ observeEvent(input$data_saveall, {
     if (is.integer(input$data_saveall)) {
         # nothing selected
     } else {
-        fileinfo = parseSavePath(root=c(`Working Directory`='.', getVolumes()()), selection = input$data_saveall)
+        fileinfo = parseSavePath(root=root.dirs, selection = input$data_saveall)
 
         withProgress({
 

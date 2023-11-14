@@ -3,15 +3,15 @@
 spectra.reference = reactiveValues()
 spectra.preview = reactiveValues()
 
-shinyFileChoose(input, "data_import_spectrometry_file", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("txt"))
-shinyFileChoose(input, "data_import_spectrometry_reference", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("csv"))
+shinyFileChoose(input, "data_import_spectrometry_file", root=root.dirs, filetypes=c("txt"))
+shinyFileChoose(input, "data_import_spectrometry_reference", root=root.dirs, filetypes=c("csv"))
 
 observeEvent(input$data_spectra_preview_file, {
     if (is.integer(input$data_import_spectrometry_file)) {
 
     } else {
         withProgress({
-            fi = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_spectrometry_file)
+            fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
 
             preview.file = as.data.table(fi)[name == input$data_spectra_preview_file, datapath]
 
@@ -44,7 +44,7 @@ observeEvent(c(input$data_import_spectrometry_file, input$data_spectra_header_ro
 
     } else {
         withProgress({
-            fi = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_spectrometry_file)
+            fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
             if (nrow(fi) == 1) {
                 output$data_import_spectrometry_filename = renderText(fi$datapath)
             } else {
@@ -156,7 +156,7 @@ observeEvent(input$data_import_spectrometry_reference, {
     if (is.integer(input$data_import_spectrometry_reference)) {
 
     } else {
-        fi = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_spectrometry_reference)
+        fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_reference)
         output$data_import_spectrometry_reference_filename = renderText(fi$datapath)
         spectra.reference$dataset = as.data.table(read_csv(fi$datapath, na = default$missing_values))
     }
@@ -286,7 +286,7 @@ observeEvent(input$data_import_spectrometry_action, {
 
     } else {
 
-        files = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_spectrometry_file)
+        files = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
 
         # going to assume all files imported at the same time are formatted exactly the same so just use the first one's header
         wavelength.c = as.data.table(read_tsv(files[1, ]$datapath, col_names = F, n_max = 1, na = default$missing_values, skip = input$data_spectra_header_row - 1, show_col_types = F))
@@ -356,8 +356,8 @@ observeEvent(input$data_import_spectrometry_action, {
                         .X = data$raw[[files[f,]$name]][, `(time)`]
 
                         tryCatch({
-                            model.1 = nls2(Y ~ alpha * exp(beta * X) + theta, start = default$exp_model_start_params, data = data.frame(X = .X, Y = color.1), na.action = "na.omit")
-                            model.2 = nls2(Y ~ alpha * exp(beta * X) + theta, start = default$exp_model_start_params, data = data.frame(X = .X, Y = color.2), na.action = "na.omit")
+                            model.1 = nlsr(Y ~ alpha * exp(beta * X) + theta, start = c(alpha = 100.0, beta = -0.01, theta = 1000.0), data = data.frame(X = .X, Y = color.1), na.action = "na.omit")
+                            model.2 = nlsr(Y ~ alpha * exp(beta * X) + theta, start = c(alpha = 100.0, beta = -0.01, theta = 1000.0), data = data.frame(X = .X, Y = color.2), na.action = "na.omit")
 
                             yhat.1 = predict(model.1, list(X = .X))
                             yhat.2 = predict(model.2, list(X = .X))

@@ -1,8 +1,8 @@
 # export.R
 
 
-shinyFileSave(input, "export_r", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("rds"))
-shinyFileSave(input, "export_excel", root=c(`Home Directory`='~', getVolumes()()), filetypes=c("xlsx"))
+shinyFileSave(input, "export_r", root=root.dirs, filetypes=c("rds"))
+shinyFileSave(input, "export_excel", root=root.dirs, filetypes=c("xlsx"))
 
 observeEvent(input$export_format, {
     shinyjs::hide("export_excel_opts")
@@ -16,7 +16,7 @@ observeEvent(input$export_r, {
     if (is.integer(input$export_r)) {
         # nothing selected
     } else {
-        fileinfo = parseSavePath(root=c(`Working Directory`='.', getVolumes()()), selection = input$export_r)
+        fileinfo = parseSavePath(root=root.dirs, selection = input$export_r)
 
         withProgress({
             obj = list()
@@ -31,7 +31,7 @@ observeEvent(input$export_excel, {
     if (is.integer(input$export_excel)) {
         # nothing selected
     } else {
-        fileinfo = parseSavePath(root=c(`Working Directory`='.', getVolumes()()), selection = input$export_excel)
+        fileinfo = parseSavePath(root=root.dirs, selection = input$export_excel)
 
         withProgress({
 

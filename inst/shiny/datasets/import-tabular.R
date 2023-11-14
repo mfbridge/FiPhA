@@ -1,6 +1,6 @@
 # import-tabular.R
 
-shinyFileChoose(input, "data_new_xlcsv_file", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("csv", "xlsx"))
+shinyFileChoose(input, "data_new_xlcsv_file", root=root.dirs, filetypes=c("csv", "xlsx"))
 
 observeEvent(input$data_new_xlcsv, {
     output$data_new_log = renderText({ "Ready to import" })
@@ -27,7 +27,7 @@ observeEvent(input$data_new_xlcsv_file, {
     if (is.integer(input$data_new_xlcsv_file)) {
         # nothing selected
     } else {
-        fileinfo = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_new_xlcsv_file)
+        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_new_xlcsv_file)
         output$data_new_xlcsv_name = renderText({ sprintf("%s", paste0(fileinfo$name, collapse=", ")) })
     }
 })
@@ -36,7 +36,7 @@ observeEvent(input$data_new_xlcsv_finish, {
     if (is.integer(input$data_new_xlcsv_file)) {
         # nothing selected
     } else {
-        fileinfo = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_new_xlcsv_file)
+        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_new_xlcsv_file)
 
         tryCatch({
             withProgress({
