@@ -41,6 +41,7 @@ server = function(input, output, session) {
     source("datasets/variables.R", local = T)
     source("datasets/preview.R", local = T)
     source("datasets/align.R", local = T)
+    source("datasets/subset.R", local = T)
     source("datasets/rename.R", local = T)
     source("datasets/baseline.R", local = T)
     source("datasets/save.R", local = T)
@@ -74,4 +75,28 @@ server = function(input, output, session) {
 
     # export tab
     source("shiny/export.R", local = T)
+
+    # check for updates
+    src = devtools::package_info("FiPhA", dependencies = F)$source
+
+    if (src == "local") {
+        cli_inform(sprintf("Skipping check for updates, FiPhA was installed from a local source."))
+
+    } else {
+        local.hash = stringr::str_match(src, "^Github \\(mfbridge\\/FiPhA@(.*)\\)$")[[1, 2]]
+        if (src == "local") local.hash = "local"
+
+        json = jsonlite::fromJSON("https://api.github.com/repos/mfbridge/FiPhA/commits/pkg")
+
+        remote.hash = json$sha
+        remote.date = json$commit$author$date
+
+        show_toast(title = "Update Available!",
+            HTML(sprintf("A new update is available to the development branch, use the RStudio addin menu to upgrade.<br/><span style='color: #d0d0d0;'>(current: %s; remote: %s, dated %s)</span>",
+                stringr::str_sub(local.hash, 1, 8),
+                stringr::str_sub(remote.hash, 1, 8),
+                remote.date)
+            ), timer = 30000)
+
+    }
 }

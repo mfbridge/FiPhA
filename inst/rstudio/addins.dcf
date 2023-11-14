@@ -1,5 +1,9 @@
-Name: Start FiPhA
-Description: Starts the FiPhA shiny application.
+Name: Start FiPhA's shiny application
+Description: Starts FiPhA's interactive shiny application.
 Binding: FiPhA
 Interactive: true
 
+Name: Update to latest development version
+Description: Updates the FiPhA package to the latest development version on github.
+Binding: update_FiPhA
+Interactive: false
