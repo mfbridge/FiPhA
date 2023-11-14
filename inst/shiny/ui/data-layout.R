@@ -19,7 +19,8 @@ data.ui = nav("Datasets",
                dropdownButton(
                    actionLink("data_unaligned", "join/align file (*.xlsx, *.csv)"),
                    actionLink("data_append", "append dataset rows"),
-                   actionLink("data_rename", "rename a variable/dataset"),
+                   actionLink("data_subset", "subset by row or time"),
+                   actionLink("data_rename", "rename a variable or dataset"),
                    tags$hr(style="margin: 0.4rem;"),
                    actionLink("data_down", "signal processing"),
                    actionLink("data_ratio", "create ratio"),
@@ -72,29 +73,43 @@ data.ui = nav("Datasets",
                     fluidRow(
                         column(4,
                             pickerInput("data_signal_var", "dataset variable", c(), width = "100%", options = list(title="Variable"))
-                        ),
-                        column(4,
-                            numericInput("data_lag_max", "max lag n", width = "100%", value = 10000, min = 1, step = 1),
-                        ),
-                        column(4,
-                            pickerInput("data_power_size", "spectrogram window size", choices = c(32, 64, 128, 256, 512, 1024, 2048, 8192), selected = 256, width = "100%")
                         )
                     ),
 
                     tabsetPanel(
                         tabPanel("lag autocorrelation",
-
-
-                            fluidRow(column(12, plotlyOutput("data_lag_plot", height = "600px") %>% withSpinner())),
+                            fluidRow(
+                                column(4,
+                                    numericInput("data_lag_max", "max lag n", width = "100%", value = 10000, min = 1, step = 1)
+                                )
+                            ),
+                            fluidRow(column(12, plotlyOutput("data_lag_plot", height = "500px") %>% withSpinner())),
                             downloadLink("data_signal_dl_lag", label = tagList(icon("download"), "Lag-autocorrelation data (xlsx)"))
+                        ),
+                        tabPanel("rolling correlation",
+                            fluidRow(
+                                column(3, pickerInput("data_corr_var2", "dataset variable", c(), width = "100%")),
+                                column(3, numericInput("data_corr_window", "window size (sec)", value = 30, min = 1)),
+                                column(3, numericInput("data_corr_resolution", "resolution (sec)", value = 1, min = 0.1, step = 0.1)),
+                                column(3, tags$br(), actionButton("data_corr_append", "append to dataset", width = "100%"))
+
+                            ),
+                            fluidRow(
+                                column(12, plotlyOutput("data_corr_plot", height = "500px") %>% withSpinner())
+                            )
                         ),
                         tabPanel("power density spectrum",
 
-                            fluidRow(column(12, plotlyOutput("data_power_plot", height = "600px") %>% withSpinner())),
+                            fluidRow(column(12, plotlyOutput("data_power_plot", height = "500px") %>% withSpinner())),
                             downloadLink("data_signal_dl_pow", label = tagList(icon("download"), "Power density spectrum data (xlsx)"))
                         ),
                         tabPanel("spectrogram",
-                            fluidRow(column(12, plotlyOutput("data_spectro_plot", height = "600px") %>% withSpinner())),
+                            fluidRow(
+                                column(4,
+                                    pickerInput("data_power_size", "spectrogram window size", choices = c(32, 64, 128, 256, 512, 1024, 2048, 8192), selected = 256, width = "100%")
+                                )
+                            ),
+                            fluidRow(column(12, plotlyOutput("data_spectro_plot", height = "500px") %>% withSpinner())),
                         )
                     )
                 )
