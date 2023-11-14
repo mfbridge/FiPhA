@@ -1,6 +1,6 @@
 # import-rds.R
 
-shinyFileChoose(input, "data_import_file_r", root=c(directories, `Home Directory`='~', getVolumes()()), filetypes=c("rds"))
+shinyFileChoose(input, "data_import_file_r", root=root.dirs, filetypes=c("rds"))
 
 observeEvent(input$data_rds, {
     output$data_import_r_filename = renderText("select a *.Rds file from a previous session")
@@ -19,7 +19,7 @@ observeEvent(input$data_import_file_r, {
     if (is.integer(input$data_import_file_r)) {
 
     } else {
-        fi = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_file_r)
+        fi = parseFilePaths(root=root.dirs, selection = input$data_import_file_r)
         output$data_import_r_filename = renderText(fi$datapath)
     }
 })
@@ -43,7 +43,7 @@ observeEvent(input$data_import_action_r, {
     if (is.integer(input$data_import_file_r)) {
 
     } else {
-        fi = parseFilePaths(root=c(directories, `Working Directory`='.', getVolumes()()), selection = input$data_import_file_r)
+        fi = parseFilePaths(root=root.dirs, selection = input$data_import_file_r)
 
         obj = readRDS(fi$datapath)
 
