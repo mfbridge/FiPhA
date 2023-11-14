@@ -2,6 +2,9 @@
 updateCurrentVariableSelections = function () {
 
     variables = names(data$raw[[input$data_dataset]])
+
+    updatePickerInput(session, "data_signal_var", choices = variables, selected = input$data_signal_var)
+    updatePickerInput(session, "data_corr_var2", choices = variables, selected = input$data_corr_var2)
     updateVirtualSelect("data_plot_x", choices = variables, selected = input$data_plot_x)
     updateVirtualSelect("data_plot_y", choices = variables, selected = input$data_plot_y)
     updatePickerInput(session, "data_time", choices = variables, selected = data$meta[[input$data_dataset]]$time)

@@ -1,5 +1,6 @@
 observeEvent(input$data_dataset, {
     updatePickerInput(session, "data_signal_var", choices = names(data$raw[[input$data_dataset]]))
+    updatePickerInput(session, "data_corr_var2", choices = names(data$raw[[input$data_dataset]]))
 })
 
 signal.values = reactiveValues()
@@ -37,6 +38,102 @@ output$data_spectro_plot = renderPlotly({
         }
     }
 })
+
+
+observeEvent(input$data_corr_append, {
+    .dt = data.table()
+    min.t = data$raw[[input$data_dataset]][, min(get(data$meta[[input$data_dataset]]$time))]
+    max.t = data$raw[[input$data_dataset]][, max(get(data$meta[[input$data_dataset]]$time))]
+    n.bins = ceiling((max.t - min.t) / input$data_corr_window)
+    t0 = min.t
+    t = data$raw[[input$data_dataset]][, get(data$meta[[input$data_dataset]]$time)]
+    while (t0 < max.t & input$data_corr_resolution > 0) {
+        subset.x = data$raw[[input$data_dataset]][(t0 <= get(data$meta[[input$data_dataset]]$time)) & (get(data$meta[[input$data_dataset]]$time) < t0 + input$data_corr_window), get(input$data_signal_var)]
+        subset.y = data$raw[[input$data_dataset]][(t0 <= get(data$meta[[input$data_dataset]]$time)) & (get(data$meta[[input$data_dataset]]$time) < t0 + input$data_corr_window), get(input$data_corr_var2)]
+
+        .dt = rbindlist(list(.dt, data.table(t = t0, correlation = xcov(subset.x, subset.y, maxlag = 0, scale = "coeff")$C[[1]])))
+
+        t0 = t0 + input$data_corr_resolution
+    }
+
+    # align with currently active dataset (optimized to only work on vectors)
+    A = data$raw[[input$data_dataset]]
+    At = data$meta[[input$data_dataset]]$time
+    B = .dt
+    Bt = "t"
+
+    x = A[, get(At)]
+    y = B[, get(Bt)]
+
+    len.x = length(x)
+    len.y = length(y)
+
+    r = numeric(length(x))
+
+    withProgress({
+        j = 1
+        for (i in 1:len.x) {
+            while (j < len.y) {
+                if (is.numeric(y[j+1]) & is.numeric(x[i])) {
+                    if (abs(y[j+1] - x[i]) < abs(y[j] - x[i])) {
+                        j = j + 1
+                    } else {
+                        break
+                    }
+                } else {
+                    break
+                }
+            }
+            if (j <= len.y) {
+                r[i] = j
+            } else {
+                r[i] = NA # past end of file
+            }
+            if (i %% 10 == 0) incProgress(amount = floor(len.x / 10))
+        }
+    }, min = 0, max = len.x)
+
+    #browser()
+    data$raw[[input$data_dataset]][, (sprintf("corr(`%s`, `%s`, %0.0f s)", input$data_signal_var, input$data_corr_var2, input$data_corr_window)) := B[r, "correlation", with = F]]
+
+    updateCurrentVariableSelections()
+})
+
+output$data_corr_plot = renderPlotly({
+    if (input$data_dataset %in% names(data$meta)) {
+        if (input$data_signal_var %in% names(data$raw[[input$data_dataset]]) & input$data_corr_var2 %in% names(data$raw[[input$data_dataset]])) {
+            .f = input$data_dataset
+
+            .dt = data.table()
+            min.t = data$raw[[.f]][, min(get(data$meta[[input$data_dataset]]$time))]
+            max.t = data$raw[[.f]][, max(get(data$meta[[input$data_dataset]]$time))]
+            n.bins = ceiling((max.t - min.t) / input$data_corr_window)
+            t0 = min.t
+            t = data$raw[[.f]][, get(data$meta[[input$data_dataset]]$time)]
+            while (t0 < max.t & input$data_corr_resolution > 0) {
+                subset.x = data$raw[[.f]][(t0 <= get(data$meta[[input$data_dataset]]$time)) & (get(data$meta[[input$data_dataset]]$time) < t0 + input$data_corr_window), get(input$data_signal_var)]
+                subset.y = data$raw[[.f]][(t0 <= get(data$meta[[input$data_dataset]]$time)) & (get(data$meta[[input$data_dataset]]$time) < t0 + input$data_corr_window), get(input$data_corr_var2)]
+
+                .dt = rbindlist(list(.dt, data.table(t = t0, correlation = xcov(subset.x, subset.y, maxlag = 0, scale = "coeff")$C[[1]])))
+
+                t0 = t0 + input$data_corr_resolution
+            }
+
+
+            .gg = ggplot(.dt, aes(x = t, y = correlation)) +
+                geom_line(size = 0.2, color = "#f08040") +
+                theme_bw(base_size = 9) +
+                scale_y_continuous(expand = c(0, 0), limits = c(-1, 1)) +
+                labs(x = "Time (s)", y = "Correlation Coefficient")
+
+            .ggplotly = subplot(ggplotly(.gg), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
+                config() %>%
+                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
+                       xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
+        }
+    }
+})
+
 
 output$data_lag_plot = renderPlotly({
     if (input$data_dataset %in% names(data$meta)) {
@@ -108,10 +205,10 @@ output$data_plot = renderPlotly({
                 if (use.y2) {
                     y2.100 = .dt[!is.na(Y2), Y2][[1]]
 
-                    .dt[, Y2 := 100 * (Y2 / y2.100)]
-                    .dt[, Y := 100 * (Y / y.100)]
+                    .dt[, Y2 := 100 * (Y2 / y2.100 - 1)]
+                    .dt[, Y := 100 * (Y / y.100 - 1)]
                 } else {
-                    .dt[, Y := 100 * (Y / y.100)]
+                    .dt[, Y := 100 * (Y / y.100 - 1)]
                 }
             }
 
@@ -143,7 +240,7 @@ output$data_plot = renderPlotly({
             }
 
             if (input$data_scale_y_y2) {
-                .ggplotly = .ggplotly %>% layout(yaxis = list(ticksuffix= " %"))
+                .ggplotly = .ggplotly %>% layout(yaxis = list(ticksuffix= " %", title = paste(input$data_plot_y, sep = ", ")))
             }
 
             fig = .ggplotly %>% toWebGL2() %>% plotly_build() %>% event_register("plotly_relayout")
