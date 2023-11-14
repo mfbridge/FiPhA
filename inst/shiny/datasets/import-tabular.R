@@ -100,12 +100,6 @@ observeEvent(input$data_new_xlcsv_finish, {
         }, finally = \() {
         })
         removeModal()
-        updatePickerInput(session, "data_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
-        updatePickerInput(session, "heatmap_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
-        updatePickerInput(session, "heatmap2_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
-        updatePickerInput(session, "events_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
-        updatePickerInput(session, "power_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
-        updatePickerInput(session, "lag_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
-        updatePickerInput(session, "summary_dataset", choices = names(data$meta), selected = fileinfo[f,]$name)
+        refreshDatasetChoices()
     }
 })

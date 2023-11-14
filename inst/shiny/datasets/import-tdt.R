@@ -65,13 +65,7 @@ observeEvent(input$data_import_tdt_action, {
                                     .str))
 
         removeModal()
-        updatePickerInput(session, "data_dataset", choices = names(data$meta))
-        updatePickerInput(session, "heatmap_dataset", choices = names(data$meta))
-        updatePickerInput(session, "heatmap2_dataset", choices = names(data$meta))
-        updatePickerInput(session, "events_dataset", choices = names(data$meta))
-        updatePickerInput(session, "power_dataset", choices = names(data$meta))
-        updatePickerInput(session, "lag_dataset", choices = names(data$meta))
-        updatePickerInput(session, "summary_dataset", choices = names(data$meta))
+        refreshDatasetChoices()
     }
 })
 

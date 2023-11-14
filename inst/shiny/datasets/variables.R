@@ -1,6 +1,17 @@
 
-updateCurrentVariableSelections = function () {
+refreshDatasetChoices = function () {
+    datasets = names(data$meta)
 
+    updatePickerInput(session, "data_dataset", choices = datasets, selected = datasets[length(datasets)])
+    updatePickerInput(session, "heatmap_dataset", choices = datasets)
+    updatePickerInput(session, "heatmap2_dataset", choices = datasets)
+    updatePickerInput(session, "events_dataset", choices = datasets)
+    updatePickerInput(session, "power_dataset", choices = datasets)
+    updatePickerInput(session, "lag_dataset", choices = datasets)
+    updatePickerInput(session, "summary_dataset", choices = datasets)
+}
+
+updateCurrentVariableSelections = function () {
     variables = names(data$raw[[input$data_dataset]])
 
     updatePickerInput(session, "data_signal_var", choices = variables, selected = input$data_signal_var)
