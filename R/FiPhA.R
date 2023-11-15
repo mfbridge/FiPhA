@@ -19,7 +19,7 @@ update_FiPhA = function(force.update = F, upgrade.dependencies = F) {
     src = devtools::package_info("FiPhA", dependencies = F)$source
 
     if (!force.update & src == "local") {
-        cli::cli_inform(sprintf("Skipping update, FiPhA was installed from a local source. Enter `FiPhA::%s` in the console to upgrade anyway.", cli::col_br_white('update_FiPhA(force = T)')))
+        cli::cli_inform(sprintf("Skipping update, FiPhA was installed from a local source. Enter `FiPhA::%s` in the console to upgrade anyway.", cli::col_br_white('update_FiPhA(force.update = T)')))
 
     } else {
         local.hash = stringr::str_match(src, "^Github \\(mfbridge\\/FiPhA@(.*)\\)$")[[1, 2]]
@@ -39,7 +39,7 @@ update_FiPhA = function(force.update = F, upgrade.dependencies = F) {
             unloadNamespace("FiPhA")
             devtools::install_github('mfbridge/FiPhA@pkg', force = T, upgrade = upgrade.dependencies)
         } else if (local.hash == remote.hash) {
-            cli::cli_inform(sprintf("Skipping update, the latest version is already installed. Enter `FiPhA::%s` in the console to upgrade anyway.", cli::col_br_white('update_FiPhA(force = T)')))
+            cli::cli_inform(sprintf("Skipping update, the latest version is already installed. Enter `FiPhA::%s` in the console to upgrade anyway.", cli::col_br_white('update_FiPhA(force.update = T)')))
         }
     }
 }
