@@ -91,7 +91,7 @@ observeEvent(input$data_corr_append, {
             }
             if (i %% 10 == 0) incProgress(amount = floor(len.x / 10))
         }
-    }, min = 0, max = len.x)
+    }, min = 0, max = len.x, message = "Appending...")
 
     #browser()
     data$raw[[input$data_dataset]][, (sprintf("corr(`%s`, `%s`, %0.0f s)", input$data_signal_var, input$data_corr_var2, input$data_corr_window)) := B[r, "correlation", with = F]]

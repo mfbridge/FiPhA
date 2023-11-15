@@ -17,7 +17,10 @@ FiPhA was developed using R v4.2.x and RStudio v2023.x.
 You can install the latest development version of FiPhA directly from [GitHub](https://github.com/) using the devtools package in RStudio with the following commands:
 
 ```r
-# install.packages("devtools")
+# install devtools
+install.packages("devtools")
+
+# build and install package from github
 devtools::install_github("mfbridge/FiPhA@pkg")
 ```
 
