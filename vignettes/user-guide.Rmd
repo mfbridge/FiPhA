@@ -1,0 +1,324 @@
+---
+title: "FiPhA User Guide"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{user-guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+- [Introduction](#intro)
+- [Installation](#install)
+  - [Issue: namespace 'x' is already loaded](#issue1)
+- [Getting started](#start)
+- [Importing datasets](#import)
+  - [Time series data (\*.csv, \*.xlsx)](#import-csv)
+  - [Tab-delimited spectrometer recordings (\*.txt)](#import-spec)
+    - [Summary statistic method](#import-stat)
+    - [Linear unmixing algorithm](#import-linear)
+  - [Lock-in demodulation data (\*.tsq, \*.tsv)](#import-tdt)
+- [Data processing](#data)
+  - [Temporal alignment of datasets](#data-align)
+  - [Detrending/photobleaching compensation](#data-detrend)
+  - [Linear rescaling](#data-rescale)
+  - [Custom scripts](#data-custom)
+    - [Example: ratio of two variables and integer scaling](#data-custom1)
+- [Event identification](#event)
+  - [Signal types](#event-signal)
+    - [Binary signal](#event-binary)
+    - [Equally-spaced bins](#event-binned)
+    - [Fixed timestamps](#event-timestamp)
+  - [Filters](#event-filter)
+    - [Conditional expression](#event-filter-cond)
+    - [Drop/keep first/last N events](#event-filter1)
+    - [Shift all events by X (sec)](#event-filter2)
+    - [Pad to minimum X (sec)](#event-filter3)
+    - [Limit at maximum X (sec)](#event-filter4)
+    - [Drop if shorter/longer than X (sec)](#event-filter5)
+    - [Aggregate if within X (sec)](#event-filter6)
+    - [Aggregate if overlapping](#event-filter7)
+    - [Keep if N within X (sec)](#event-filter8)
+    - [Include events before/after X (sec)](#event-filter9)
+    - [Drop if within X (sec)](#event-filter10)
+  - [Normalizations](#event-normal)
+    - [Z score](#event-z)
+    - [Robust z score](#event-robust)
+    - [Delta-F over F](#event-delta)
+  - [Intervals](#event-intervals)
+    - [Before event](#event-intervals-before1)
+    - [Before event, non-overlapping](#event-intervals-before2)
+    - [Event signal](#event-intervals-event)
+    - [After event](#event-intervals-after)
+
+## Introduction {#intro}
+
+FiPhA (**Fi**ber **Ph**otometry **A**nalysis) is a suite of tools for interactively exploring and visualizing fiber photometry datasets in context of event-based 
+neurobehavior experiments. It is capable of importing and processing data from a variety of fiber photometry systems, such as those which are camera-based (e.g., Plexon), 
+utilize a lock-in demodulation method (e.g., Tucker-Davis Technologies), or are spectrometer-based setups.
+
+Intervals of interest surrounding arbitrary events can be defined using a flexible system which assigns named intervals to regions relative to each event, which 
+can then be processed and visualized in order to investigate differences in fiber photometry responses relative to the event in question.
+
+Processed datasets, graphics, analysis results, and summary tables can be exported at various stages for further use within R using the FiPhA session objects 
+(a structured list() of datasets that represent the internal state of FiPhA), or more generally via CSV and formatted Excel output files for import and manipulation 
+by hand or in other software.
+
+
+## Installation {#install}
+
+FiPhA was developed using R v4.2.x and RStudio v2023.x.
+
+You can install the latest development version directly from GitHub using the devtools package in RStudio with the following commands:
+
+```r
+# install devtools if not already
+install.packages("devtools")
+
+# download and install FiPhA package from github
+devtools::install_github("mfbridge/FiPhA@pkg")
+```
+
+### Issue: namespace 'x' is already loaded {#issue1}
+
+Depending on the R version installed, packages that are both automatically loaded by RStudio and which are sub-dependencies of FiPhA's (e.g., rlang, xfun, etc.) may
+be too out of date for FiPhA's dependencies but fail to update when navigating to Tools &rarr; Check for Package Updates..., resulting in errors like the following:
+
+```
+Error in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]) :
+  namespace ‘rlang’ 1.0.2 is already loaded, but >= 1.0.6 is required
+```
+
+Since these packages are always in use within RStudio, they may need to be updated externally using the plain R GUI (in Windows, this is found under the Start Menu 
+entry for R and is entitled something like "R 4.2.3"). Once RGui has been opened, packages may be updated by navigating to Packages &rarr; Update packages..., or 
+by entering `update.packages()` in the console.
+
+[Windows] Packages on CRAN may occasionally have newer versions available in source form compared to it's latest binary release. It is not required to build and 
+install any dependencies from source when installing FiPhA. Warnings about Rtools not being installed can be safely ignored.
+
+## Getting started {#start}
+
+Once FiPhA has been installed, it can be started within RStudio from the Addins menu (Addins &rarr; FiPhA &rarr; Start FiPhA), or via the console:
+
+```r
+FiPhA::FiPhA()
+```
+
+## Importing datasets {#import}
+
+A variety of dataset formats are supported which do not require any additional processing prior to loading via the 'Import' drop down menu: time series datasets in the 
+form of \*.csv (comma separated values) or \*.xlsx (Microsoft Excel) files, raw tab-delimited (\*.txt) spectrometer recordings, as well as lock-in demodulation data 
+in the form of binary \*.tsq/\*.tsv files from Tucker-Davis Technologies' fiber photometry system.
+
+Previous sessions (saved via the Export tab) may also be re-loaded using this menu, in addition to a sample dataset that has been bundled with FiPhA which contains
+a selection of data from both an auditory tone-based experiment and running wheel experiment.
+
+
+### Time series data (\*.csv, \*.xlsx) {#import-csv}
+
+One or more comma-separated values or Microsoft Excel Workbooks which share a consistent format may be loaded at once by specifying their header row, first data row,
+sheet number (Excel only), and observation frequency (in Hz). This format is intended for time series data that has already been processed or from systems that export
+directly to these (such as Plexon's camera-based system).
+
+### Tab-delimited spectrometer recordings (\*.txt) {#import-spec}
+
+Spectrometer-based systems which export raw spectral data as tab-delimited recordings require additional processing to derive fluorescent signal data. The expected
+format of this data consists of tabbed columns of wavelength intensity measurements over time (it is also assumed the first column is a timestamp).
+
+Similar to time series data, this format requires specifying header and data row numbers in addition to observation frequency and a method of processing raw spectra. 
+Available choices for this task are a linear unmixing algorithm (for instances where a normalized reference spectra are available), as well as a summary statistic method 
+that allows users to choose ranges of wavelengths to summarize by taking their mean response amplitude.
+
+#### Summary statistic method {#import-stat}
+
+This method of decomposing raw spectra into usable time series allows for arbitrary selection of up to two wavelength ranges, calculating either their integrated
+area under the curve, mean response, or median response. A preview window allows visualization of these ranges and includes options for automatically calculating their
+ratio or choosing a detrending method to compensate for fluorophore photobleaching (this step may also be performed at a later stage with additional options available).
+
+For example, tdTomato's peak emission occurs at 581 nm, and thus a range of 576-586 nm may be suitable for capturing changes in its fluorescence.
+
+#### Linear unmixing algorithm {#import-linear}
+
+A linear unmixing algorithm as described by Meng et al., is also available to process spectrally-resolved data. Given a normalized reference spectra of a fluorescent response, 
+it decomposes a spectral recording into a univariate time series by taking the linear regression coefficients of the reference fitted at each point in time.
+
+### Lock-in demodulation data {#import-tdt}
+
+Data from Tucker-Davis Technologies' lock-in demodulation fiber photometry systems are stored in a binary format along with a directory of metadata files.
+An implementation of code capable of directly reading this data is available as part of FiPhA which does not depend on any additional software, although its capabilities
+are currently limited to features of the format that are relevant to the data streams involved in a fiber photometry recording. 
+
+After selecting a directory containing a pair of \*.tsq and \*.tsv files (other \*.tXX files are not currently used) the user is presented with a list of available data streams depending
+on what was saved, such as the individual intensity channels of the recorded wavelengths (e.g., 405 nm, 465 nm, 560 nm, etc.) and LED driver channels.
+
+
+## Data processing {#data}
+
+Once imported, one or more transformations may be applied to each dataset via the Transform menu. Standard data manipulations such as subsetting, appending rows, 
+down-sampling, rescaling, and applying low-pass filters are available. Tasks more specific to problems encountered with fiber photometry data
+are also available, such as temporally aligning a simultaneous recording and de-trending to compensate for photobleaching phenomena.
+
+### Temporal alignment of datasets {#data-align}
+
+Datasets from other sources may be unsynchronized or have been recorded at a different observation frequency. FiPhA allows users to temporally align
+datasets, joining variables from other recordings across time. No interpolation is performed, selecting the nearest neighbor when down-/up-sampling.
+
+
+### Detrending/photobleaching compensation] {#data-detrend}
+
+When dealing with fluorescent indicators, a gradual decay in the excited light received is often observed and is compensated for by the removal of a fitted decay trend. 
+
+Available choices are linear or a nonlinear exponental decay model, and options exist to control output column(s) created by centering around zero or exporting model fits.
+
+
+### Linear rescaling {#data-rescale}
+
+Transforming the scale of one variable to that of another by applying a linear transformation.
+
+
+### Custom scripts {#data-custom}
+
+For instances where more complex functionality is required, users may develop R scripts to apply custom transformations. The code is executed in a blank environment
+where a `dt` variable is pre-populated with the loaded dataset in question, and at the end of execution its contents replace that of the selected dataset. Since
+FiPhA utilizes the data.table package, many common transformations can be performed in one liners:
+
+#### Example: ratio of two variables and integer scaling {#data-custom1}
+
+Given two variables, calculating their ratios and creating a third column can be easily performed using an appropriate data.table syntax:
+
+```r
+# dt is an existing object in this environment.
+
+# each column can be referenced like a normal dataset variable
+# in addition to a `(time)` column. names with spaces or
+# special characters need to be quoted with backticks (`)
+# := is an assignment operator within a data.table
+
+dt[, `new ratio` := `numerator variable` / denominator]
+
+# similarly, scaling a variable by some constant:
+dt[, value := value / 2^16]
+```
+
+## Event identification {#event}
+
+Processing datasets into series of events for subsequent analysis requires the user to specify an event definition. This is done by selecting the signal type, which
+can be one of: a binary signal, an equally-spaced bin, or list of fixed timestamps; applying optional filters to remove spurious events or condition them on other variables;
+describing intervals of interest relative to the event in question; and finally choosing a normalization to be applied.
+
+### Signal types {#event-signal}
+
+#### Binary signal {#event-binary}
+
+A binary signal definition is useful for when a dataset column contains a logical binary (0/1) signal whose initial rising edge defines the start of an event, which lasts until
+the falling edge of the signal the defines its end. This is often behavior data or an event pulse from an external hardware device.
+
+#### Equally-spaced bins {#event-binned}
+
+Separation of a dataset into equally spaced bins is done by specifying the t<sub>0</sub> starting point of the first bin and their length.
+
+#### Fixed timestamps {#event-timestamp}
+
+Users may enter a list of start and end times to define a set of events for instances where their occurrence is fixed in time.
+
+### Filters {#event-filter}
+
+Optionally, one or more filters can be applied to the "raw" events derived from the specified event signal. These can condition events based on dataset variables,
+keep or remove based on order or time, aggregate a spuriously firing series of event signals into a single block, and more in order to filter out spurious and unwanted events
+in a systematic fashion. 
+
+In the case of the filter list, new rows can be added via the right click menu.
+
+#### Conditional expression {#event-filter-cond}
+
+Limiting event identification to a range that is determined by the values of particular variables is performed using any valid R expression, where dataset variable names
+are variables (those containing spaces or special characters need to be quoted with ``\`backticks/grave accents\```), and at least one row (by default) or all observations
+within a block of observations must meet the criteria to pass as a valid event.
+
+#### Drop/keep first/last N event {#event-filter1}
+
+Excludes or includes only the first/last N events in the series.
+
+#### Shift all events by X (sec) {#event-filter2}
+
+Adds a constant time to all start/end times.
+
+#### Pad to minimum X (sec) {#event-filter3}
+
+If an event is shorter than X seconds, it is padded so that it lasts a minimum of X seconds.
+
+#### Limit at maximum X (sec) {#event-filter4}
+
+Events are capped at a maximum of X seconds, and no interleaved events are created to fill longer periods.
+
+#### Drop if shorter/longer than X (sec) {#event-filter5}
+
+Exclusion based on event length.
+
+#### Aggregate if within X (sec) {#event-filter6}
+
+If a subsequent event occurs within X seconds of a previous event, they are replaced by a single event lasting up to their total span + X.
+
+#### Aggregate if overlapping {#event-filter7}
+
+If an event starts before a previous one ends, both are coalesced into one larger event, can occur via fixed events or filters.
+
+#### Keep if N within X (sec) {#event-filter8}
+
+Keep an event if N are occurring within X seconds of it's start time, excluding those below a certain rate.
+
+#### Include events before/after X (sec) {#event-filter9}
+
+Exclusion based on timestamp.
+
+#### Drop if within X (sec) {#event-filter10}
+
+If an event occurs within X seconds of the end of the previous, it is removed.
+
+
+
+### Normalizations {#event-normal}
+
+A selection of normalizations are available, as certain ones may be more appropriate under particular circumstances. Each normalization is applied only to data that
+fall within the bounds of intervals defined for an event.
+
+#### Z score {#event-z}
+
+Standard z score referenced to a baseline period.
+
+#### Robust Z {#event-robust}
+
+A more robust z score-like value whose calculation is median based. Slightly harder to interpret.
+
+#### Delta-F over F {#event-delta}
+
+A change from baseline calculation expressed as a percentage of the baseline value.
+
+
+
+### Intervals {#event-intervals}
+
+Intervals of interest may be assigned using the table available in the event creation dialog where they are defined by: a name, type of interval (reference point), and possibly start/end times.
+
+#### Before event {#event-intervals-before1}
+
+An interval of this type is referenced to the start of an event, so that by setting its start value to a negative number and its end value to a zero it defines an interval occurring directly prior to the actual event.
+
+#### Before event, non-overlapping {#event-intervals-before2}
+
+Similar to the above, but if an event's interval defined using this type would happen to overlap with a previous event (whether the actual event or an interval defined post-event), it is shortened so that it does not overlap.
+
+#### Event signal {#event-intervals-event}
+
+This interval refers to the raw event signal that defines the given event post-filtering.
+
+#### After event {#event-intervals-after}
+
+This interval is referenced to the end of an event, so that with a start time of zero and end time of some positive number it defines an interval occurring immediately after an event stops.
+
