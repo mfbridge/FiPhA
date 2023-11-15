@@ -57,7 +57,7 @@ default = list(
 )
 
 # load imports for shiny app
-packages = stringr::str_split(packageDescription("FiPhA")$Imports, ",\n")[[1]]
+packages = stringr::str_split(packageDescription("FiPhA")$Imports, c("\\W+"))[[1]]
 
 for (p in packages) {
     if (!require(p, character.only = T)) {
