@@ -34,7 +34,7 @@ Since this project is under active development, users may update it to the lates
 
 ## User Guide
 
-See the [user guide](https://github.com/mfbridge/FiPhA/blob/pkg/docs/articles/user-guide.html) for more details and examples.
+See the [user guide](https://mfbridge.github.io/FiPhA/articles/user-guide.html) for more complete details and examples.
 
 ## Sample Data
 
