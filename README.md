@@ -18,24 +18,13 @@ sessions can be saved for later retrieval, and all datasets used during
 processing exist as data.table/data.frame objects in a central R object
 for future reference even without the application.
 
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [User Guide](#user-guide)
+
 ## Recent updates
 
-**June 2023** - A generalized framework that replaces the internal code
-of the Shiny app with a more structured and standardized feature set
-available to R without Shiny interactivity is currently a work in
-progress and will be part of the next major application update along
-with a more polished layout that utilizes updated libraries.
-
-## Links
-
-- [Features](#features)
-  - [Import Formats](#import-formats)
-  - [Transformations](#transformations)
-  - [Events](#events)
-- [Usage](#usage)
-- [Examples](#examples)
-- [References](#references)
-- [Acknowledgements](#acknowledgements)
+**Nov 2023** Now packaged as an R package with some quality of life improvements, it can be installed with ``devtools::install_github("mfbridge/FiPhA@pkg")``.
 
 ## Features
 
@@ -125,32 +114,36 @@ applied to particular variables of interest, such as a standard z-score,
   - delta-F / F0, or percent depature from baseline
   - percent change over time
 
-## Usage
 
-FiPhA requires a recent version of R & RStudio, and builds on top of
-numerous R packages available on CRAN. However, only the `shiny` package
-needs to be installed in order to start, as the application will install
-any additional packages from CRAN when initializing.
+## Installation
 
-Assuming the project has been opened in RStudio, starting the Shiny
-interface can be done anywhere by executing `shiny::runApp()` in the
-console.
+FiPhA was developed using R v4.2.x and RStudio v2023.x. 
 
-Alternatively, navigating to global.R or ui.R in the RStudio editor will
-present a Shiny-specific “Run App” button in the top right of the editor
-pane.
+You can install the latest development branch as a package directly from GitHub using the devtools package in RStudio with the following commands:
 
-TODO: An even more standalone version using the Electron framework may
-be available on the
-[releases](https://github.com/mfbridge/FiPhA/releases) page.
+```r
+# install devtools if not already (or `remotes`)
+install.packages("devtools")
 
-## Examples
+# download and install FiPhA package branch from github
+devtools::install_github("mfbridge/FiPhA@pkg")
+```
 
-TODO: Add some examples figures and screenshots
+## Getting Started
 
-## References
+Once installed, FiPhA can be started by navigating to its entry within the RStudio Addins menu. Alternatively, it can be started directly from the console by entering ``FiPhA::FiPhA()``.
 
-TODO: Add references
+### Updating
+
+Since this project is under active development, users may update it to the latest development version by selecting the appropriate entry in the RStudio Addins menu. This operation is just a shortcut to e-installing without upgrading any dependency packages.
+
+## User Guide
+
+See the [user guide](https://mfbridge.github.io/FiPhA/articles/user-guide.html) for more complete details and examples.
+
+## Sample Datasets
+
+A sample of fiber photometry datasets may be loaded via the import menu.
 
 ## Acknowledgements
 
