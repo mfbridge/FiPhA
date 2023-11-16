@@ -22,6 +22,36 @@
     <loc>https://mfbridge.github.io/FiPhA/index.html</loc>
   </url>
   <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/FiPhA.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/deltaf.html</loc>
+  </url>
+  <url>
     <loc>https://mfbridge.github.io/FiPhA/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/pctchg.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/pctdff.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/read_tev.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/read_tsq.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/robustz.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/tsq_info.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/update_FiPhA.html</loc>
+  </url>
+  <url>
+    <loc>https://mfbridge.github.io/FiPhA/reference/zscore.html</loc>
   </url>
 </urlset>
