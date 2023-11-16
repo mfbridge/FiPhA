@@ -57,7 +57,36 @@ default = list(
 )
 
 # load imports for shiny app
-packages = stringr::str_split(packageDescription("FiPhA")$Imports, c("\\W+"))[[1]]
+packages = c("assertthat",
+    "bit64",
+    "bslib",
+    "checkmate",
+    "cli",
+    "data.table",
+    "excelR",
+    "ggh4x",
+    "ggplot2",
+    "ggprism",
+    "ggrepel",
+    "gsignal",
+    "lubridate",
+    "nlsr",
+    "patchwork",
+    "plotly",
+    "R.utils",
+    "readr",
+    "readxl",
+    "scales",
+    "shiny",
+    "shinycssloaders",
+    "shinyFiles",
+    "shinyHugePlot",
+    "shinyjs",
+    "shinyWidgets",
+    "stringr",
+    "writexl",
+    "devtools",
+    "jsonlite")
 
 for (p in packages) {
     if (!require(p, character.only = T)) {

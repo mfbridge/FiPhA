@@ -12,9 +12,9 @@ Visualizations use the plotly library, have a number of configurable display opt
 
 ## Installation
 
-FiPhA was developed using R v4.2.x and RStudio v2023.x.
+FiPhA was developed using R v4.2.x and RStudio v2023.x. 
 
-You can install the latest development version directly from GitHub using the devtools package in RStudio with the following commands:
+You can install the latest development branch as a package directly from GitHub using the devtools package in RStudio with the following commands:
 
 ```r
 # install devtools if not already (or `remotes`)
@@ -26,9 +26,9 @@ devtools::install_github("mfbridge/FiPhA@pkg")
 
 ## Getting Started
 
-Once installed, FiPhA can be started by navigating to its entry within the RStudio Addins menu. Alternatively, it can be started directly from the console by entering ``r FiPhA::FiPhA()``.
+Once installed, FiPhA can be started by navigating to its entry within the RStudio Addins menu. Alternatively, it can be started directly from the console by entering ``FiPhA::FiPhA()``.
 
-## Updating
+### Updating
 
 Since this project is under active development, users may update it to the latest development version by selecting the appropriate entry in the RStudio Addins menu. This operation is just a shortcut to e-installing without upgrading any dependency packages.
 
@@ -36,9 +36,9 @@ Since this project is under active development, users may update it to the lates
 
 See the [user guide](https://mfbridge.github.io/FiPhA/articles/user-guide.html) for more complete details and examples.
 
-## Sample Data
+## Sample Datasets
 
-A small sample of fiber photometry datasets may be loaded through the import menu.
+A sample of fiber photometry datasets may be loaded via the import menu.
 
 ## Acknowledgements
 

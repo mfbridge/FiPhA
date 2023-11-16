@@ -1,5 +1,3 @@
-
-
 tsq.events = list(
     unknown =   0x00000000,
     str.on =    0x00000101,

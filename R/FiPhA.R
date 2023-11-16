@@ -1,6 +1,5 @@
 #' Start FiPhA's Shiny Application
 #'
-#' @return
 #' @export
 #'
 FiPhA = function() {
@@ -10,9 +9,8 @@ FiPhA = function() {
 #' Update FiPhA from its GitHub repo
 #'
 #' @param force.update upgrade even if already the latest version
-#' @param upgrade.dependencies upgrade dependencies if available (may need to be compiled from source)
+#' @param upgrade.dependencies upgrade dependencies if available
 #'
-#' @return
 #' @export
 #'
 update_FiPhA = function(force.update = F, upgrade.dependencies = F) {

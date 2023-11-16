@@ -91,12 +91,13 @@ server = function(input, output, session) {
         remote.hash = json$sha
         remote.date = json$commit$author$date
 
-        show_toast(title = "Update Available!",
-            HTML(sprintf("A new update is available to the development branch, use the RStudio addin menu to upgrade.<br/><span style='color: #d0d0d0;'>(current: %s; remote: %s, dated %s)</span>",
-                stringr::str_sub(local.hash, 1, 8),
-                stringr::str_sub(remote.hash, 1, 8),
-                remote.date)
-            ), timer = 30000)
-
+        if (local.hash != remote.hash) {
+            show_toast(title = "Update Available!",
+                HTML(sprintf("A new update is available to the development branch, use the RStudio addin menu to upgrade.<br/><span style='color: #d0d0d0;'>(current: %s; remote: %s, dated %s)</span>",
+                    stringr::str_sub(local.hash, 1, 8),
+                    stringr::str_sub(remote.hash, 1, 8),
+                    remote.date)
+                ), timer = 30000)
+        }
     }
 }

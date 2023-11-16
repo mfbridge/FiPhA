@@ -22,8 +22,8 @@ zscore = function(x, r = x, fun = mean) {
 #' @export
 #'
 robustz = function(x, r, fun = mean) {
-    R = pctdff(r, r, fun = mean)
-    (pctdff(x, x) - median(R)) / mad(R)
+    R = pctdff(r, r)
+    (pctdff(x, x) - median(R)) / mad(R, constant = 1)
 }
 
 #' Percent change
@@ -32,8 +32,6 @@ robustz = function(x, r, fun = mean) {
 #'
 #' @return values as a percent of the first x
 #' @export
-#'
-#' @examples
 pctchg = function(x) {
     (x - first(x)) / x * 100
 }
