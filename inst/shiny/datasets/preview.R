@@ -32,7 +32,7 @@ output$data_spectro_plot = renderPlotly({
                 labs(x = "Time (s)", y = "Frequency (Hz)")
 
             .ggplotly = subplot(ggplotly(.gg), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -127,7 +127,7 @@ output$data_corr_plot = renderPlotly({
                 labs(x = "Time (s)", y = "Correlation Coefficient")
 
             .ggplotly = subplot(ggplotly(.gg), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -154,7 +154,7 @@ output$data_lag_plot = renderPlotly({
                 labs(x = "Lag", y = "Lag-n Autocorrelation")
 
             .ggplotly = subplot(ggplotly(.gg1), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -179,7 +179,7 @@ output$data_power_plot = renderPlotly({
                 labs(x = "Frequency (Hz)", y = "Power (dB)")
 
             .ggplotly = subplot(ggplotly(.gg2), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
-                config() %>%
+                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto"))
         }
@@ -223,7 +223,7 @@ output$data_plot = renderPlotly({
                 theme(legend.position = "bottom", text = element_text(size = input$data_font_size, family = input$data_font_family))
 
             .ggplotly = ggplotly(.gg) %>%
-                config() %>%
+                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
                 layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
                        xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto", font = list(size=input$data_font_size, color = input$data_y_color), title = input$data_plot_y[[1]]))
 

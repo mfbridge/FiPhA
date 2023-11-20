@@ -57,7 +57,8 @@ default = list(
 )
 
 # load imports for shiny app
-packages = c("assertthat",
+packages = c(
+    "assertthat",
     "bit64",
     "bslib",
     "checkmate",
@@ -86,7 +87,9 @@ packages = c("assertthat",
     "stringr",
     "writexl",
     "devtools",
-    "jsonlite")
+    "jsonlite",
+    "FiPhA"
+)
 
 for (p in packages) {
     if (!require(p, character.only = T)) {
@@ -96,19 +99,7 @@ for (p in packages) {
 
 root.dirs = c(directories, `Home`=path.expand("~"), getVolumes()())
 
-
-# cluster.n.threads = detectCores(logical = F)
-# printf("[parallel] initializing %d workers...\n", cluster.n.threads)
-# cluster = makeCluster(cluster.n.threads)
-# # clusterEvalQ(cluster, library(data.table))
-# # clusterEvalQ(cluster, library(readr))
-# printf("[parallel] done!\n")
-# # clean up workers when finished
-# onStop(\() {
-#     stopCluster(cluster)
-# })
-
-#options(shiny.fullstacktrace = T)
+options(shiny.fullstacktrace = T)
 options(spinner.type = 8, spinner.color = "#000000")
 
 # helper functions ------------------------------------------------------------------------------------------------
@@ -129,17 +120,5 @@ plotlyMessage = function(text, render = T) {
         renderPlotly(.plot)
     } else {
         .plot
-    }
-}
-
-# calculate the area under a set of points using the trapezoidal rule (equivalent to the average of a left and right Riemann sum)
-auc = function(x, t = NULL, dt = NULL, na.rm = T) {
-    if (!is.null(dt)) {
-        weights = c(1, rep(2, length(x) - 2), 1)
-        return(sum(x * (weights * dt) / 2, na.rm = na.rm))
-    } else {
-        L = shift(t, n = -1, fill = t[length(t)]) - t
-        R = t - shift(t, n = 1, fill = t[1])
-        return(sum(x * (L + R) / 2, na.rm = na.rm))
     }
 }

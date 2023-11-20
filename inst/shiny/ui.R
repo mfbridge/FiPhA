@@ -58,6 +58,12 @@ ui = tagList(useShinyjs(),
                         shinySaveButton("export_r", "Save as...", "Save as...", filetype = list(`.rds file`="rds"))
                     )
                 )
+            ),
+            tags$h5("Plotly Options"),
+            fluidRow(
+                column(4, virtualSelectInput("plotly_format", "Output image format", choices = c("png", "svg", "jpeg"), selected = "png")),
+                column(4, numericInput("plotly_width", "Image width (px)", value = 1280, min = 0, step = 1)),
+                column(4, numericInput("plotly_height", "Image height (px)", value = 640, min = 0, step = 1))
             )
         )
 

@@ -1,12 +1,23 @@
-#' Start FiPhA's Shiny Application
+#' Starts FiPhA's Shiny Application
+#'
+#' @description
+#' Starts the Shiny user interface application.
+#'
+#' @examples
+#' # start in a browser
+#' FiPhA::FiPhA(launch.browser = T)
 #'
 #' @export
 #'
-FiPhA = function() {
-    shiny::runApp(system.file("shiny/", package = "FiPhA"))
+FiPhA = function(...) {
+    shiny::runApp(system.file("shiny/", package = "FiPhA"), ...)
 }
 
-#' Update FiPhA from its GitHub repo
+#' Update FiPhA
+#'
+#' @description
+#' Update the package by re-installing the latest build from its github branch, optionally updating packages along the way. Skips updating by default if
+#' the package was installed locally.
 #'
 #' @param force.update upgrade even if already the latest version
 #' @param upgrade.dependencies upgrade dependencies if available

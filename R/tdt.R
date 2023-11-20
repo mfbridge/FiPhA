@@ -163,6 +163,8 @@ tsq_info = function(tsq.headers) {
 
 #' Read raw values contained in tev file using tsq data
 #' @description
+#' Given a set of event headers found by reading the tsq file, read data into usable time series formats.
+#'
 #' TODO: fix for importing multiple frequencies at once
 #'
 #' @param path folder containing TDT data files (*.tsq, *.tev, etc.)
@@ -173,6 +175,7 @@ tsq_info = function(tsq.headers) {
 #' @param wide return data in a wide format rather than long
 #'
 #' @return data.table of raw values
+#'
 #' @export
 #'
 read_tev = function(path, tsq.headers = NULL, streams = c("405A", "465A", "560B"), wide = T) {
