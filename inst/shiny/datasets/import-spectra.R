@@ -147,7 +147,8 @@ observe({
             coord_cartesian(expand = F) +
             geom_path(aes(x = x, y = y, color = name), .data3, size = 0.4, inherit.aes = F, alpha = 0.85) +
             scale_color_viridis_d(begin = 0.2, end = 0.8, option = "turbo") +
-            theme(axis.text.y = element_blank())
+            theme(axis.text.y = element_blank()) %>%
+                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width))
         )
     })
 })

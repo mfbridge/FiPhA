@@ -28,6 +28,7 @@ data.ui = nav("Datasets",
                    actionLink("data_custom", "custom R script"),
                    tags$hr(style="margin: 0.4rem;"),
                    actionLink("data_rescale", "linear scaling"),
+                   actionLink("data_norm", "normalize"),
                    circle = F, label = "Transform", size = "xs", inline = T, status = "info"
                ),
                 dropdownButton(

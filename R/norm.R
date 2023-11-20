@@ -33,7 +33,7 @@ robustz = function(x, r, fun = mean) {
 #' @return values as a percent of the first x
 #' @export
 pctchg = function(x) {
-    (x - first(x)) / x * 100
+    (x - first(x)) / first(x) * 100
 }
 
 #' Percent Delta F over F
