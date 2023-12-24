@@ -84,7 +84,7 @@ output$events_preview = renderPlotly({
 
         .gg
     }) %>%
-        config() %>%
+        config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
         layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
             xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
         toWebGL2()
