@@ -217,7 +217,7 @@ output$data_plot = renderPlotly({
             .gg = ggplot(.dt, aes(x = X)) +
                 geom_path(aes(y = Y), color = input$data_y_color, size = input$data_y_size) +
                 (get(paste0("theme_", input$data_theme)))(base_size = input$data_font_size) +
-                labs(x = ifelse(input$data_plot_x == "(time)", "Time", input$data_plot_x), y = NULL) + #paste0(input$data_plot_y, collapse = ", ")) +
+                labs(x = ifelse(input$data_plot_x == "(time)", "Time (s)", input$data_plot_x), y = NULL) + #paste0(input$data_plot_y, collapse = ", ")) +
                 #scale_color_manual(values = c(input$data_y_color, input$data_y2_color), guide = guide_legend(title = NULL)) +
                 scale_x_continuous(expand = c(0, 0)) +
                 theme(legend.position = "bottom", text = element_text(size = input$data_font_size, family = input$data_font_family))

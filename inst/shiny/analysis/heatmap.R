@@ -47,7 +47,7 @@
      .gg = ggplot(dataset, aes(x = Xstr, y = e, fill = Y)) +
         geom_tile(aes(color = Y), lwd = 0.5) +
         (get(paste0("theme_", input$heatmap_theme)))(base_size = input$heatmap_font_size) +
-        labs(x = "Event Time", y = NULL) +
+        labs(x = "Event Time (s)", y = NULL) +
         theme(legend.position = "bottom", text = element_text(size = input$heatmap_font_size, family = input$heatmap_font_family)) + scale_color_continuous(guide = guide_none())
 
      if (input$heatmap_palette == "gradient2") {

@@ -52,7 +52,7 @@
 
         .gg = .gg + geom_line(size = input$heatmap2_y_size, color = input$heatmap2_meansd_line, alpha = input$heatmap2_y_alpha) +
             (get(paste0("theme_", input$heatmap2_theme)))(base_size = input$heatmap2_font_size) +
-            labs(x = "Event Time", y = NULL) +
+            labs(x = "Event Time (s)", y = NULL) +
             theme(legend.position = "bottom", text = element_text(size = input$heatmap2_font_size, family = input$heatmap2_font_family))
 
 
