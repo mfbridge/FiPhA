@@ -2,7 +2,7 @@
 % Please edit documentation in R/FiPhA.R
 \name{update_FiPhA}
 \alias{update_FiPhA}
-\title{Update FiPhA from its GitHub repo}
+\title{Update FiPhA}
 \usage{
 update_FiPhA(force.update = F, upgrade.dependencies = F)
 }
@@ -12,5 +12,6 @@ update_FiPhA(force.update = F, upgrade.dependencies = F)
 \item{upgrade.dependencies}{upgrade dependencies if available}
 }
 \description{
-Update FiPhA from its GitHub repo
+Update the package by re-installing the latest build from its github branch, optionally updating packages along the way. Skips updating by default if
+the package was installed locally.
 }

@@ -28,5 +28,7 @@ read_tev(
 data.table of raw values
 }
 \description{
+Given a set of event headers found by reading the tsq file, read data into usable time series formats.
+
 TODO: fix for importing multiple frequencies at once
 }

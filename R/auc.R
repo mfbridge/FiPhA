@@ -9,7 +9,7 @@
 #' @param dt optional data.table
 #' @param na.rm remove missing values
 #'
-#' @return
+#' @return total area bounded by the points (t, x)
 #'
 #' @export
 #'

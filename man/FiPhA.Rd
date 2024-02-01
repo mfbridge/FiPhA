@@ -2,10 +2,15 @@
 % Please edit documentation in R/FiPhA.R
 \name{FiPhA}
 \alias{FiPhA}
-\title{Start FiPhA's Shiny Application}
+\title{Starts FiPhA's Shiny Application}
 \usage{
-FiPhA()
+FiPhA(...)
 }
 \description{
-Start FiPhA's Shiny Application
+Starts the Shiny user interface application.
+}
+\examples{
+# start in a browser
+FiPhA::FiPhA(launch.browser = T)
+
 }
