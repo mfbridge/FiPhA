@@ -79,126 +79,114 @@ analysis.ui = navbarMenu("Analysis",
         )
     ),
 
-    # "---",
-    # "Signal Processing",
-    #
-    # tabPanel("lag-1 autocorrelation",
-    #     fluidRow(
-    #         column(4, pickerInput("lag_dataset", NULL, c(), width = "100%", options = list(title="Select a dataset"))),
-    #         column(4, pickerInput("lag_series", NULL, choices = c(), multiple = T)),
-    #         column(4,
-    #             fluidRow(
-    #                 column(12,
-    #                     dropdown(size = "xs", status = "primary", icon = icon("cogs"), right = T,
-    #                         plotOptions("lag_options", options = list(
-    #                                             list(type="title", text="Plot Options"),
-    #                                             list(type="font-size+family", size.id="lag_font_size", family.id="lag_font_family", text = "Font", size.value = 14, family.value = "Open Sans"),
-    #                                             list(type="theme", id = "lag_theme", text = "Theme"),
-    #                                             list(type="hr"),
-    #                                             list(type="palette", text="Palette", palette.id="lag_palette", from.id = "lag_from", to.id = "lag_to", from.color = "#000000", to.color = "#ffffff")
-    #                                     )
-    #                     ))
-    #                 )
-    #             )
-    #         )
-    #     ),
-    #     fluidRow(
-    #         column(12,
-    #             tabsetPanel(
-    #                 tabPanel("Plot", plotOutput("lag_plot", height = "600px") %>% withSpinner())
-    #             )
-    #         )
-    #     ),
-    # ),
-    #
-    # tabPanel("power density spectrum",
-    #     fluidRow(
-    #         column(4, pickerInput("power_dataset", NULL, c(), width = "100%", options = list(title="Select a dataset"))),
-    #         column(4, pickerInput("power_series", NULL, choices = c(), multiple = T)),
-    #         column(4,
-    #             fluidRow(
-    #                 column(12,
-    #                     dropdown(size = "xs", status = "primary", icon = icon("cogs"), right = T,
-    #                         plotOptions("power_options", options = list(
-    #                                             list(type="title", text="Plot Options"),
-    #                                             list(type="font-size+family", size.id="power_font_size", family.id="power_font_family", text = "Font", size.value = 14, family.value = "Open Sans"),
-    #                                             list(type="theme", id = "power_theme", text = "Theme"),
-    #                                             list(type="hr"),
-    #                                             list(type="checkbox", id = "power_log10_x", text="log10 X Axis"),
-    #                                             list(type="checkbox", id = "power_log10_y", text="log10 Y Axis")
-    #                                             #list(type="palette", text="Palette", palette.id="lag_palette", from.id = "lag_from", to.id = "lag_to", from.color = "#000000", to.color = "#ffffff")
-    #                                     )
-    #                     ))
-    #                 )
-    #             )
-    #         )
-    #     ),
-    #     fluidRow(
-    #         column(12,
-    #             tabsetPanel(
-    #                 tabPanel("Plot", plotlyOutput("power_plot", height = "800px") %>% withSpinner())
-    #             )
-    #         )
-    #     ),
-    # ),
-
     "---",
     "Statistics",
 
 
     tabPanel("interval summaries",
-        fluidRow(
-            #column(4, pickerInput("summary_dataset", NULL, c(), width = "100%", multiple = T, options = list(title="Select a dataset", `actions-box`=T))),
-            column(8, virtualSelectInput("summary_series", NULL, choices = c(), multiple = T, allowNewOption = F, autoSelectFirstOption = F, optionHeight = "24rem", width = "100%")),
-            column(4,
-                fluidRow(
-                    column(6,
-                        dropdown(size = "xs", status = "warning", icon = icon("chart-area"), right = T,
-                            pickerInput("summary_function", NULL, choices = c("mean", "median", "auc")),
-                            tags$label(style="font-weight: bold; text-align: center; width: 100%;", "AUC Options"),
-                            pickerInput("summary_auc_type", NULL, c("integrate over full interval"="full", "integrate over specified range"="range")),
-                            sliderInput("summary_auc_range", HTML("t<sub>interval</sub> Range"), min = 0, max = 0, value = c(0, 0), dragRange = T, step = 0.001))
+        layout_columns(col_widths = 12, row_heights = c(7, 5),
+            layout_columns(col_widths = c(4, 8),
+                card(
+                    card_header(
+                        layout_columns(class = "m-0", col_widths = c(10, 2),
+                            "Model",
+                            div(class = "text-end",
+                                dropMenu(actionLink("summary_model_menu", label = NULL, icon = icon("gears"), class = "text-dark"), padding = "0px", theme="light-border", placement = "bottom",
+                                    virtualSelectInput("summary_function", "Summary Function", choices = c("mean", "median", "auc"), selected = "mean"),
+                                    virtualSelectInput("summary_model_ss", "ANOVA Sums of Squares", selected = "III", choices = c("Type I"="I", "Type II"="II", "Type III" ="III"), width = "100%"),
+                                    tags$br(),
+                                    div(style = "text-align: left; font-size: 0.75rem;",uiOutput("summary_ss_info")),
+                                    tags$br(),tags$br(),
+                                    checkboxGroupInput("summary_options", "lme4 Options",
+                                        choices = list(
+                                            "Use REML instead of ML\u00b9"="reml"), selected = c("drop", "reml"), width = "100%"),
+
+                                    tags$br(),
+                                    div(style = "font-size: 0.75rem; text-align: left;",
+                                        HTML("<sup>1</sup> REML (restricted maximum likelihood) estimates are unbiased, but models with different fixed effects cannot be directly compared using log-likelihood methods such as AIC (Akaike Information Criterion).")
+                                    )
+                                )
+                            )
+                        )
                     ),
-                    column(6,
-                        dropdown(size = "xs", status = "primary", icon = icon("cogs"), right = T,
-                            plotOptions("summary_options", options = list(
-                                                list(type="title", text="Plot Options"),
-                                                list(type="font-size+family", size.id="summary_font_size", family.id="summary_font_family", text = "Font", size.value = 14, family.value = "Open Sans"),
-                                                list(type="theme", id = "summary_theme", text = "Theme"),
-                                                list(type="hr"),
-                                                list(type="palette", text="Palette", palette.id="summary_palette", from.id = "summary_from", to.id = "summary_to", from.color = "#404040", to.color = "#a0a0a0")
-                                        )
-                        ))
+
+                    virtualSelectInput("summary_model_type", NULL, selected = NULL, placeholder = "Model Type", width = "100%", choices = c("One-Way ANOVA"="one", "Two-Way ANOVA"="two", "Repeated Measures ANOVA"="rep")),
+                    div(style = "font-size: 0.75rem;", uiOutput("summary_model_info") ),
+                    virtualSelectInput("summary_series", "Data", choices = c(), multiple = T, placeholder = "Series", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_fixed_effects", "Fixed Effect(s)", choices = c("Dataset", "Series", "Event #", "Interval"), selected = "Interval", multiple = T, placeholder = "Main/Fixed Effect(s)", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_interaction_terms", "Interaction(s)", choices = c(), multiple = T, placeholder = "Interaction(s)", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_random_effects", "Random Effect(s)" , choices = c("Dataset", "Series", "Event #", "Interval"), selected = "Event #", multiple = T, placeholder = "Random Effect(s)", optionHeight = "24rem", width = "100%"),
+
+                ),
+                card(
+                    card_header(
+                        layout_columns(class = "m-0", col_widths = c(10, 2),
+                            "Plot",
+                            div(class = "text-end",
+                                dropMenu(actionLink("test", label = NULL, icon = icon("gears"), class = "text-dark"), padding = "0px", theme="light-border", placement = "bottom-end",
+                                    div(style = "text-align: left;",
+                                        checkboxGroupInput("summary_plot_options", label = "Options", choices = c("dodged groupings"="dodgex", "horizontal facets"="hzfacet", "horizontal legend"="hzlegend", "visible color legend"="legend"), selected = c("hzfacet", "hzlegend", "dodgex", "legend")),
+                                    virtualSelectInput("summary_plot_palette", "Palette", choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"), selected = "turbo", multiple = F, placeholder = "Palette", optionHeight = "24rem", width = "100%")
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    layout_columns(col_widths = c(6, 6),
+                        virtualSelectInput("summary_plot_color", NULL, choices = c("Dataset", "Series", "Event #", "Interval"), multiple = T, maxValues = 1, placeholder = "color", optionHeight = "24rem", width = "100%"),
+                        virtualSelectInput("summary_plot_facet", NULL, choices = c("Dataset", "Series", "Event #", "Interval"), multiple = T, maxValues = 1, placeholder = "facet", optionHeight = "24rem", width = "100%")
+                    ),
+                    plotlyOutput("summary_boxplot", fill = T)
+                )
+            ),
+
+            navset_card_tab(
+                nav_panel("Summary",
+                    layout_columns(col_widths = c(6, 6),
+                        card(fill = T,
+                            card_body(class = "p-0",
+                                div(style = "font-size: 0.75rem;" ,
+                                    #tags$pre(style = "padding: 0;",
+                                        verbatimTextOutput("summary_summary"),
+                                    #),
+                                    #tags$pre(style = "padding: 0;",
+                                        verbatimTextOutput("summary_anova")
+                                    #)
+                                )
+                            )
+                        ),
+                        card(fill = T,
+                            card_body(class = "p-0",
+                                div(style = "font-size: 0.75rem;",
+                                    verbatimTextOutput("summary_model")
+                                )
+                            )
+
+                        )
+                    ),
+                ),
+
+                nav_panel("Diagnostics",
+                    layout_columns(col_widths = c(4, 4, 4),
+                        plotOutput("summary_qqplot", fill = T),
+                        plotOutput("summary_residual_vfit", fill = T),
+                        plotOutput("summary_residual_dist", fill = T)
+                    )
+                ),
+
+                nav_menu("Data",
+                    nav_item(downloadLink("summary_download_csv", label = "save as *.csv")),
+                    nav_item(downloadLink("summary_download_xlsx", label = "save as *.xlsx"))
+                ),
+
+                nav_panel("Packages",
+                    layout_columns(col_widths = c(6, 6),
+                        tags$small("The currently installed versions of the packages lme4 (for mixed models), base stats (for one-/two-way models), and car (for type II & III sums of squares). "),
+                        DT::DTOutput("summary_pkg")
                     )
                 )
             )
-        ),
-        fluidRow(
-            column(12,
-                tabsetPanel(
-                    tabPanel("Plot", plotOutput("summary_plot", height = "720px") %>% withSpinner())
-                    #tabPanel("Data", excelOutput("summary_data", width = "100%", height = "100%"))
-                )
-            )
-        ),
-        # tags$br(),
-        # tabsetPanel(
-        #     tabPanel("Summary",
-        #         tags$h6("Assumptions"),
-        #         tags$ul(
-        #             tags$li("Summary values were not significantly different from that a normal distribution (Shapiro-Wilk p=0.5, Kolmogorov-Smirnov p=0.5)."),
-        #             tags$li("Variances among interval groups did not significantly depart from one another (Levene's test p=0.5).")
-        #         ),
-        #         tags$h6("ANOVA Results"),
-        #         tags$ul(
-        #             tags$li("Intervals were not significantly different from one another.")
-        #         )
-        #     ),
-        #     tabPanel("Distribution"),
-        #     tabPanel("Variance"),
-        #     tabPanel("ANOVA")
-        # )
-    ),
+        )
 
-    #tabPanel("analysis of variance")
+    )
 )

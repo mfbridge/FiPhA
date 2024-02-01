@@ -10,7 +10,6 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     assertthat,
-    bit64,
     bslib,
     checkmate,
     cli,
@@ -22,12 +21,11 @@ Imports:
     ggrepel,
     gsignal,
     lubridate,
-    nlsr,
     patchwork,
     plotly,
+    qqplotr,
     R.utils,
     readr,
-    readxl,
     scales,
     shiny,
     shinycssloaders,
@@ -35,13 +33,18 @@ Imports:
     shinyHugePlot,
     shinyjs,
     shinyWidgets,
-    stringr,
-    writexl
+    stringr
 Suggests: 
+    bit64,
+    car,
     devtools,
-    knitr,
     jsonlite,
-    rmarkdown
+    knitr,
+    lme4,
+    nlsr,
+    rmarkdown,
+    readxl,
+    writexl
 VignetteBuilder: knitr
 URL: https://mfbridge.github.io/FiPhA/
 RoxygenNote: 7.2.3

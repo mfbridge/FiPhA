@@ -71,9 +71,11 @@ packages = c(
     "ggrepel",
     "gsignal",
     "lubridate",
+    #"lme4", # loading the lme4 namespace conflicts with some other packages that are used
     "nlsr",
     "patchwork",
     "plotly",
+    "qqplotr",
     "R.utils",
     "readr",
     "readxl",

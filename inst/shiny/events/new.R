@@ -314,7 +314,7 @@ observeEvent(input$events_new_finish, {
 
         # TODO: simplify this as it's a little kludged together
         tryCatch({
-
+            #browser()
             incProgress(1/4, detail = "collecting datasets")
             data$events[[input$events_dataset2]][[new.name]] = extract_event_datasets(filtered, int, new.name)[[input$events_dataset2]][[new.name]]
         }, error = function(e) {
