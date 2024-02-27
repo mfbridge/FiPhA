@@ -1,0 +1,64 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: FiPhA
+message: 'If you use this software, please cite it as below'
+type: software
+authors:
+  - given-names: Matthew F.
+    family-names: Bridge
+    email: spanda3@jhu.edu
+  - given-names: Leslie R.
+    family-names: Wilson
+  - given-names: Sambit
+    family-names: Panda
+  - given-names: Korey D.
+    family-names: Stevanovic
+  - given-names: Ayland C.
+    family-names: Letsinger
+  - given-names: Sandra
+    family-names: McBridge
+  - given-names: Jesse D.
+    family-names: Cushman
+identifiers:
+  - type: doi
+    value: 10.1117/1.NPh.11.1.014305
+    description: Neurophotonics
+repository-code: 'https://github.com/mfbridge/FiPhA'
+url: 'https://mfbridge.github.io/FiPhA/'
+abstract: >-
+  FiPhA (Fiber Photometry Analysis) is a platform for interactive dataset exploration, event visualization, and summary analysis of fiber photometry datasets in neurobehavior experiments.
+keywords:
+  - fiber photometry
+  - calcium imaging
+  - event processing
+  - R
+  - Shiny
+preferred-citation:
+  type: article
+  authors:
+  - given-names: Matthew F.
+    family-names: Bridge
+    email: spanda3@jhu.edu
+  - given-names: Leslie R.
+    family-names: Wilson
+  - given-names: Sambit
+    family-names: Panda
+  - given-names: Korey D.
+    family-names: Stevanovic
+  - given-names: Ayland C.
+    family-names: Letsinger
+  - given-names: Sandra
+    family-names: McBridge
+  - given-names: Jesse D.
+    family-names: Cushman
+  doi: "10.1117/1.NPh.11.1.014305"
+  journal: "Neurophotonics"
+  month: 2
+  start: 014305-1 # First page number
+  end: 014305-13 # Last page number
+  title: "FiPhA: an open-source platform for fiber photometry analysis"
+  issue: 1
+  volume: 11
+  year: 2024
