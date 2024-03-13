@@ -22,11 +22,13 @@ Imports:
     ggrepel,
     gsignal,
     lubridate,
+    nlsr,
     patchwork,
     plotly,
     qqplotr,
     R.utils,
     readr,
+    readxl,
     scales,
     shiny,
     shinycssloaders,
@@ -34,7 +36,8 @@ Imports:
     shinyHugePlot,
     shinyjs,
     shinyWidgets,
-    stringr
+    stringr,
+    writexl
 Suggests: 
     bit64,
     car,
@@ -42,10 +45,7 @@ Suggests:
     jsonlite,
     knitr,
     lme4,
-    nlsr,
-    rmarkdown,
-    readxl,
-    writexl
+    rmarkdown
 VignetteBuilder: knitr
 URL: https://mfbridge.github.io/FiPhA/
 RoxygenNote: 7.2.3
