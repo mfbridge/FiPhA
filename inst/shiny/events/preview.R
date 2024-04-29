@@ -39,7 +39,8 @@ output$events_preview = renderPlotly({
     ggplotly({
         .gg = ggplot(dataset, aes(x = X, y = Y, color = i, group = e)) +
             #facet_grid(s ~ .) +
-            (get(paste0("theme_", input$events_theme)))(base_size = input$events_font_size) +
+            #(get(paste0("theme_", input$events_theme)))(base_size = input$events_font_size) +
+            theme_minimal(base_size = input$events_font_size) +
             labs(x = input$events_title_xaxis, y = input$events_title_yaxis) +
             theme(panel.spacing = unit(0, "cm")) +
             coord_cartesian(expand = F)

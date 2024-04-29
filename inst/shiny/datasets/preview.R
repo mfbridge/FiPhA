@@ -186,78 +186,258 @@ output$data_power_plot = renderPlotly({
     }
 })
 
-output$data_plot = renderPlotly({
-    if (input$data_dataset %in% names(data$meta)) {
-        name = input$data_dataset
-        use.y2 = length(input$data_plot_y) > 1
+binary_periods = function(x, t, inverted = F) {
+    suppressWarnings({
+        s = as.numeric(x)
+    })
 
-        y.range = NULL
+    s[which(is.na(s))] = 0
+    s[which(is.null(s))] = 0
 
-        if (!is.null(input$data_plot_x) & (length(input$data_plot_y) > 0)) {
-            if (use.y2) {
-                .dt = data$raw[[name]][, .(X = get(input$data_plot_x), Y = get(input$data_plot_y[1]), Y2 = get(input$data_plot_y[2]))]
-            } else {
-                .dt = data$raw[[name]][, .(X = get(input$data_plot_x), Y = get(input$data_plot_y[1]))]
-            }
+    assert_true(length(unique(s)) == 2)
 
-            if (input$data_scale_y_y2) {
-                y.100 = .dt[!is.na(Y), Y][[1]]
-                if (use.y2) {
-                    y2.100 = .dt[!is.na(Y2), Y2][[1]]
+    if (inverted) s = !s
 
-                    .dt[, Y2 := 100 * (Y2 / y2.100 - 1)]
-                    .dt[, Y := 100 * (Y / y.100 - 1)]
-                } else {
-                    .dt[, Y := 100 * (Y / y.100 - 1)]
-                }
-            }
+    # identify all state transitions (0 -> 1, 1 -> 0)
+    idx = which((is.na(shift(s, n = 1)) & (s == 1)) | ((shift(s, n = 1) == 0) & (s == 1)) | ((shift(s, n = 1) == 1) & (s == 0)) | (is.na(shift(s, n = -1)) & (s == 1)))
 
-            .preview$ds = NULL
+    # should always have pairs
+    assert_true(length(idx) %% 2 == 0)
 
-            .gg = ggplot(.dt, aes(x = X)) +
-                geom_path(aes(y = Y), color = input$data_y_color, size = input$data_y_size) +
-                (get(paste0("theme_", input$data_theme)))(base_size = input$data_font_size) +
-                labs(x = ifelse(input$data_plot_x == "(time)", "Time (s)", input$data_plot_x), y = NULL) + #paste0(input$data_plot_y, collapse = ", ")) +
-                #scale_color_manual(values = c(input$data_y_color, input$data_y2_color), guide = guide_legend(title = NULL)) +
-                scale_x_continuous(expand = c(0, 0)) +
-                theme(legend.position = "bottom", text = element_text(size = input$data_font_size, family = input$data_font_family))
+    # build list of times
+    r = data.table(start = numeric(), end = numeric())
 
-            .ggplotly = ggplotly(.gg) %>%
-                config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%
-                layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25),
-                       xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto", font = list(size=input$data_font_size, color = input$data_y_color), title = input$data_plot_y[[1]]))
-
-            .ggplotly$x$data[[1]]$name = input$data_plot_y[[1]]
-
-            if (use.y2) {
-                .ggplotly = .ggplotly %>% add_trace(x = .dt[, X], y = .dt[, Y2], name=input$data_plot_y[2], yaxis= ifelse(input$data_scale_y_y2, "y", "y2"), mode="lines", type = "scatter",
-                        line=list(color = input$data_y2_color, width = input$data_y2_size*2)) %>% layout(yaxis2 = list(title=input$data_plot_y[2])) #, color = input$data_y2_color))
-
-                if (!input$data_scale_y_y2) {
-                    .ggplotly = .ggplotly %>%
-                        layout(margin = list(t = 0, b = 0, l = 80, r = 80),
-                            yaxis2 = list(side = "right", overlaying = "y", anchor = "free", position = 1, tickfont = list(family = input$data_font_family, size = input$data_font_size, color = input$data_y2_color)))
-                }
-            }
-
-            if (input$data_scale_y_y2) {
-                .ggplotly = .ggplotly %>% layout(yaxis = list(ticksuffix= " %", title = paste(input$data_plot_y, sep = ", ")))
-            }
-
-            fig = .ggplotly %>% toWebGL2() %>% plotly_build() %>% event_register("plotly_relayout")
-
-
-            ds = downsampler$new(figure = fig,
-                aggregator = nth_pnt_aggregator2$new(),
-                n_out = 10000)
-
-            .preview$ds = ds
-
-            ds$figure
+    for (i in 1:length(idx)) {
+        if (i %% 2 == 0) {
+            r = rbindlist(list(r, data.table(start = t[idx[i-1]], end = t[idx[i]-1])))
         }
-    } else {
-        plotlyMessage("Select an imported dataset and variable(s) to plot.", F)
     }
+
+    return(r)
+}
+
+binary2shapes = function(dt, t, y, color, alpha) {
+    shapes = list()
+    intervals = binary_periods(dt[, get(..t)], dt[, get(y)])
+
+    for (p in 1:nrow(intervals)) {
+        shapes[[p]] = list(
+            type = "vrect",
+            fillcolor = color, opacity = alpha,
+            line = list(color = color, opacity = alpha, width = 0),
+            x0 = intervals[p, start], x1 = intervals[p, end],
+            y0 = 0, y1 = 1.0,
+            xref = "x", yref = "y domain",
+            layer = "below"
+        )
+    }
+
+    return(shapes)
+}
+
+
+output$data_plot = renderPlotly({
+    req(input$data_plot_x, input$data_plot_y, input$data_dataset %in% names(data$meta), input$data_plot_y_open == F)
+
+    #withProgress({
+        #setProgress( message = "Collecting data...", value = 0.25)
+
+        shade.binary = "shade_binary" %in% input$data_plot_options
+        color.ticks = "y2_color" %in% input$data_plot_options
+
+        .name = input$data_dataset # input$tree_selected[[1]]$data$name
+        #.cols = names(data$raw[[.name]]) # data_columns(state$active, .name)
+        .time = input$data_plot_x # data_time(state$active, .name)
+        .data = copy(data$raw[[.name]]) # copy(data_table(state$active, .name))
+        .preview$dt = cbind(.data, data.table(.empty = rep(Inf, nrow(.data))))
+
+        #setProgress(message = "Building plot...", value = 0.75)
+
+        shapes = list()
+
+        pal1index = 1
+        pal2index = 1
+
+        is.binary = lapply(input$data_plot_y, \(c) length(unique(.data[, get(c)])) == 2)
+
+        if (input$data_scale_y_y2) {
+            for (.yi in 1:length(input$data_plot_y)) {
+                var = input$data_plot_y[[.yi]]
+                if (!is.binary[[.yi]]) {
+                    .preview$dt[, (var) := (get(var) - first(get(var), na_rm = T)) / first(get(var), na_rm = T)]
+                }
+            }
+        }
+
+        figure = plot_ly(
+            data = .preview$dt,
+            x = ~ get(input$data_plot_x),
+            y = ~ get(input$data_plot_y[[1]]),
+            name = input$data_plot_y[[1]],
+            yaxis = "y",
+            type = "scatter",
+            mode = "lines",
+            visible = ifelse(shade.binary, !is.binary[[1]], T),
+            line = list(color = palette_index(input$pal1, pal1index), width = input$data_plot_line_width)
+        )
+
+        # user might have selected a binary variable first
+        if (shade.binary & is.binary[[1]]) {
+            figure = figure |>
+                add_trace(x = ~get(input$data_plot_x), y = ~.empty,
+                    type = "scatter", mode = "markers",
+                    marker = list(color = palette_index(input$pal2, pal2index), symbol = "square"),
+                    name = input$data_plot_y[[1]], inherit = F)
+            shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[1]], .time, palette_index(input$pal2, pal2index), input$pal2alpha))
+            pal2index = pal2index + 1
+        } else {
+            pal1index = pal1index + 1
+        }
+
+        if ("title" %in% input$data_plot_options) {
+        figure = figure |> layout(
+            title = list(
+                text = sprintf("<b>%s</b>", .name),
+                font = list(size = input$data_font_size * 1.5, family = input$data_font_family)
+            ),
+            margin = list(
+                t = 50
+            )
+        )
+        }
+
+        #if ("x" %in% input$elements) {
+            figure = figure |> layout(
+                xaxis = list(tickmode = "auto", nticks = 15, domain = c(0, 1.0 - 0.075 * (length(input$data_plot_y)-sum(unlist(is.binary))-1)),
+                    tickfont = list(size = input$data_font_size),
+                    tickcolor = "#000000",
+                    title = ifelse(input$data_plot_x == "(time)", "<b>Time, sec</b>", sprintf("<b>%s</b>",input$data_plot_x)),
+                    titlefont = list(size = input$data_font_size, family = input$data_font_family),
+                    showgrid = "x_grid" %in% input$data_plot_options
+                )
+            )
+        # } else {
+        #     figure = figure |> layout(xaxis = list(visible = F))
+        # }
+
+        #if ("y" %in% input$elements) {
+            figure = figure |> layout(
+                yaxis = list(tickmode = "auto", nticks = 15, visible = ifelse(shade.binary & is.binary[[1]], F, T),
+                    tickfont = list(size = 12),
+                    tickcolor = "#000000",
+                    title = sprintf("<b>%s</b>", input$data_plot_y[[1]]), automargin = T,
+                    titlefont = list(size = input$data_font_size, family = input$data_font_family),
+                    #range = c(0.25, 0.75),
+                    showgrid = "y_grid" %in% input$data_plot_options
+                )
+            )
+        # } else {
+        #     figure = figure |> layout(yaxis = list(visible = F))
+        # }
+
+        # base figure
+        figure = figure |>
+            config(responsive = T, toImageButtonOptions = list(format = input$plotly_format, filename = .name, height = 720, width = 1280, scale = 1)) |>
+            layout(
+                legend = list(itemsizing = "constant", orientation = "h", xanchor = "center", yanchor = "center", x = 0.5 - 0.075 * (length(input$data_plot_y)-sum(unlist(is.binary))-1)/2, xref = "container", font = list(size = 12))
+                # font = list(
+                #     family = state$pref("plot_font")
+                # )
+            )
+
+        if (input$data_scale_y_y2) {
+            figure = figure |> layout(yaxis = list(tickformat = ".1%"))
+        }
+
+        # programmatically add other traces
+        if (length(input$data_plot_y) > 1) {
+            figure = figure %>% layout(margin = list(r = 0))
+
+            idx = 2
+            for (y2i in 2:length(input$data_plot_y)) {
+                if (shade.binary & is.binary[[idx]]) {
+                    # create shape list and append for a binary variable
+                    figure = figure |>
+                        add_trace(x = ~get(input$data_plot_x), y = ~.empty,
+                            type = "scatter", mode = "markers",
+                            marker = list(color = palette_index(input$pal2, pal2index), symbol = "square"),
+                            name = input$data_plot_y[[y2i]], inherit = F)
+                    shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[y2i]], .time, palette_index(input$pal2, pal2index), input$pal2alpha))
+                    pal2index = pal2index + 1
+
+
+                } else {
+
+                    # build parameters for a function call for a regular trace
+                    call.par = list(
+                        p = figure,
+                        x = .preview$dt[, get(input$data_plot_x)],
+                        y = .preview$dt[, get(input$data_plot_y[[y2i]])],
+                        yaxis = paste0("y", idx),
+                        name = input$data_plot_y[[y2i]],
+                        visible = T,
+                        type = "scatter", mode = "lines", line = list(width = input$data_plot_line_width, color = palette_index(input$pal1, pal1index))
+                    )
+
+                    # make add_trace() call
+                    figure = do.call(add_trace, call.par)
+
+                    # are all of these necessary?
+                    # TODO: tickmode = "sync" is only in plotly.js versions 2.18+, but the current plotly CRAN package still uses 2.11
+                    args = setNames(
+                        list(
+                            figure,
+                            list(tickmode = "sync", nticks = 15, side = "right", overlaying = "y",
+                                tickfont = list(size = input$data_font_size, family = input$data_font_family),
+                                color = ifelse(color.ticks, palette_index(input$pal1, pal1index), "#000000"),
+                                tickcolor = ifelse(color.ticks, palette_index(input$pal1, pal1index), "#000000"),
+                                title = sprintf("<b>%s</b>", input$data_plot_y[[y2i]]), automargin = T,
+                                titlefont = list(size = input$data_font_size),
+                                showgrid = "y2_grid" %in% input$data_plot_options,
+                                position = 1.0 - 0.075*(pal1index-1), anchor = "free"
+                                #visible = "y2" %in% input$elements
+                            ) # scaleanchor = "y" toggle?
+                        ),
+                        c("p", paste0("yaxis", idx)))
+
+                    if (input$data_scale_y_y2) {
+                        args[[2]]$tickformat = ".1%"
+                        View(args)
+                    }
+
+                    figure = do.call(layout, args)
+                    pal1index = pal1index + 1
+                }
+
+
+                idx = idx + 1
+            }
+        }
+
+        figure = figure |> layout(shapes = shapes)
+
+        # convert to webgl element if necessary
+        # faster drawing for large number of points, but plotly still complains about not rendering in RStudio even though it does
+        #if (state$pref("plot_webgl")) {
+            figure = figure |> toWebGL()
+        #}
+
+        figure = figure |> plotly_build() %>% event_register("plotly_relayout")
+
+        # resume interaction events after building plot (avoids warning messages about unregistered plotly events)
+        #observe_doubleclick$resume()
+        #observe_relayout$resume()
+
+        #figure$x$data[[1]]$name = input$y[[1]]
+
+        .preview$ds = downsampler$new(figure = figure,
+            aggregator = nth_pnt_aggregator2$new(),
+            n_out = 10000 # state$pref("max_points")
+        )
+    #})
+
+    .preview$ds$figure
+
 })
 
 .preview = reactiveValues()

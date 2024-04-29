@@ -124,3 +124,33 @@ plotlyMessage = function(text, render = T) {
         .plot
     }
 }
+
+palettes = list()
+palettes = append(palettes, ggprism::ggprism_data$colour_palettes)
+palettes = palettes[!(names(palettes) %in% c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"))]
+palettes = append(palettes, list(
+    viridis = viridis::viridis_pal(option = "viridis")(6),
+    magma = viridis::viridis_pal(option = "magma")(6),
+    plasma = viridis::viridis_pal(option = "plasma")(6),
+    inferno = viridis::viridis_pal(option = "inferno")(6),
+    cividis = viridis::viridis_pal(option = "cividis")(6),
+    mako = viridis::viridis_pal(option = "mako")(6),
+    rocket = viridis::viridis_pal(option = "rocket")(6),
+    turbo = viridis::viridis_pal(option = "turbo")(6)
+))
+
+
+palette_index = function(pal, n) {
+    if (is.null(pal)) return("#ff00ff")
+
+    if (length(pal) > 1) {
+        return(pal[[n %% length(pal)]])
+
+    } else {
+        if (pal %in% names(palettes)) {
+            return(palettes[[pal]][[n %% length(palettes[[pal]])]]) # cycle through colors
+        } else {
+            return("#ff00ff")
+        }
+    }
+}

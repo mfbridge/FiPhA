@@ -11,10 +11,12 @@ LazyData: true
 Imports: 
     assertthat,
     bslib,
+    car,
     checkmate,
     cli,
     data.table,
     DT,
+    esquisse,
     excelR,
     ggh4x,
     ggplot2,
@@ -22,6 +24,7 @@ Imports:
     ggrepel,
     gsignal,
     lubridate,
+    lme4,
     nlsr,
     patchwork,
     plotly,
@@ -40,11 +43,9 @@ Imports:
     writexl
 Suggests: 
     bit64,
-    car,
     devtools,
     jsonlite,
     knitr,
-    lme4,
     rmarkdown
 VignetteBuilder: knitr
 URL: https://mfbridge.github.io/FiPhA/

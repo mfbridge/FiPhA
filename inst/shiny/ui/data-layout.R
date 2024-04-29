@@ -48,18 +48,33 @@ data.ui = nav("Datasets",
                      #column(5, pickerInput("data_plot_x", NULL, c(), width = "100%", options = list(title="X Axis Variable"))),
                      column(5, virtualSelectInput("data_plot_x", NULL, c(), width = "100%", multiple = F, placeholder = "X Axis Variable")),
                      #column(5, pickerInput("data_plot_y", NULL, c(), width = "100%", multiple = T, options = list(`max-options`=2, title="Y Axis Variable(s)"))),
-                     column(5, virtualSelectInput("data_plot_y", NULL, c(), width = "100%", multiple = T, maxValues = 2, placeholder = "Y Axis Variable(s)")), # options = list(`max-options`=2, title="Y Axis Variable(s)"))),
+                     column(5, virtualSelectInput("data_plot_y", NULL, c(), width = "100%", multiple = T, placeholder = "Y Axis Variable(s)")), # options = list(`max-options`=2, title="Y Axis Variable(s)"))),
                      column(2, dropdown(size = "xs", status = "primary", icon = icon("cogs"), right = T,
                                         plotOptions("data_plot_opts", options = list(
                                             list(type="title", text="Plot Options"),
                                             list(type="font-size+family", size.id="data_font_size", family.id="data_font_family", text = "Font", size.value = 14, family.value = "Open Sans"),
-                                            list(type="theme", id = "data_theme", text = "Theme"),
-                                            list(type="hr"),
-                                            list(type="line-size+color", size.id="data_y_size", color.id="data_y_color", text="Y Size & Color", size.value=0.15, color.value="#000000"),
-                                            list(type="line-size+color", size.id="data_y2_size", color.id="data_y2_color", text="Y2 Size & Color", size.value=0.15, color.value="#ff0000"),
+                                            #list(type="theme", id = "data_theme", text = "Theme"),
+                                            #list(type="hr"),
+                                            # list(type="line-size+color", size.id="data_y_size", color.id="data_y_color", text="Y Size & Color", size.value=0.15, color.value="#000000"),
+                                            # list(type="line-size+color", size.id="data_y2_size", color.id="data_y2_color", text="Y2 Size & Color", size.value=0.15, color.value="#ff0000"),
                                             list(type="hr"),
                                             list(type="checkbox", id = "data_scale_y_y2", text = "plot percent change", checked = F))
+                                    ),
+
+                                    esquisse::palettePicker("pal1", "Line Palette", choices = palettes, selected = "turbo", textColor = "#e0e0e0", pickerOpts = list(size=6), plainColor = T),
+                                    esquisse::palettePicker("pal2", "Area Palette", choices = palettes, selected = "turbo", textColor = "#e0e0e0", pickerOpts = list(size=6), plainColor = T),
+                                    numericInput("data_plot_line_width", label = "Line Width", value = 0.5, min = 0, step = 0.05),
+                                    prettyCheckboxGroup("data_plot_options", label = "Options",
+                                        choices = list(
+                                            "Use dataset name as plot title"="title",
+                                            "Shade binary areas"="shade_binary",
+                                            "X axis grid lines"="x_grid",
+                                            "Y axis grid lines"="y_grid",
+                                            "Y2 axis grid lines"="y2_grid",
+                                            "Color secondary axes and grid lines"="y2_color"
+                                        ), selected = c("y2_color", "shade_binary", "x_grid", "y_grid", "y2_grid")
                                     )
+
                             )
                      )
                  ),
