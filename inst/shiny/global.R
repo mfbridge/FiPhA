@@ -25,10 +25,10 @@ default = list(
 
     # default interval definition; simple baseline of 5 s prior to event
     intervals = data.frame(
-        name=c("baseline", "event"),
-        reference=c("before event", "event signal"),
-        start=c(-5, NA),
-        end=c(0, NA)
+        name=c("baseline", "event","post"),
+        reference=c("before event", "event signal","after event"),
+        start=c(-5, NA, 0),
+        end=c(0, NA, 5)
     ),
 
     # list of fixed event times
