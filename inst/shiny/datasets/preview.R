@@ -432,7 +432,7 @@ output$data_plot = renderPlotly({
 
         .preview$ds = downsampler$new(figure = figure,
             aggregator = nth_pnt_aggregator2$new(),
-            n_out = 10000 # state$pref("max_points")
+            n_out = 1e5
         )
     #})
 
