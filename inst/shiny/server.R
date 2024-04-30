@@ -24,9 +24,6 @@ server = function(input, output, session) {
         analysis = list()
     )
 
-    # TODO: figure out a nice way to keep track of last used options between opening different instances of the same dialogs
-    last = reactiveValues()
-
     # Collect and reduce available variables to the common ones between multiple datasets
     getCommonDatasetVariables = function(x) {
         varlists = list()
@@ -34,6 +31,19 @@ server = function(input, output, session) {
             varlists = append(varlists, list(colnames(data$raw[[r]])))
         }
         Reduce(intersect, varlists)
+    }
+
+    # When loading data.table objects from disk, an internal pointer isn't created automatically
+    # which prevents certain operations from modifying contents until something does.
+    setCurrentSession = function(obj) {
+        for (n in names(obj)) {
+            if (n == "raw") {
+                for (j in names(obj$raw)) {
+                    obj$raw[[j]] = copy(obj$raw[[j]]) # this sets data.table's .internal.selfref
+                }
+            }
+            data[[n]] = obj[[n]]
+        }
     }
 
     # data tab

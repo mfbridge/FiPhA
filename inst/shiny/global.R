@@ -2,25 +2,12 @@ directories = c(
 
 )
 
-
 default = list(
     # values to interpret as missing when importing csv/xlsx files
     missing_values = c("", ".", "-", "NA"),
 
     # fonts to choose from in plots
     fonts = c("Arial", "Open Sans", "Times New Roman", "Courier New",  "Garamond", "Verdana", "Georgia", "Comic Sans MS"),
-
-    # guesses for initial parameter values for nls2
-    # exp_model_start_params = data.frame(
-    #     alpha = c(10, 1, 100, 200, 4000, 1, 1),
-    #     beta = c(1, 1, -10, -0.1, -0.001, -0.1, 0.00001),
-    #     theta = c(0, 1, 1, 0, 1, 1, -100)
-    # ),
-    # exp_model_start_params = data.frame(
-    #     alpha = c(0, 1e4),
-    #     beta = c(-1, -0.001),
-    #     theta = c(-10000, 10000)
-    # ),
 
     # data import defaults
     import_header_row = 1,
@@ -101,6 +88,7 @@ for (p in packages) {
 
 root.dirs = c(directories, `Home`=path.expand("~"), getVolumes()())
 
+options(shiny.maxRequestSize = 1024^3)
 options(shiny.fullstacktrace = T)
 options(spinner.type = 8, spinner.color = "#000000")
 

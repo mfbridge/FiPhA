@@ -1,61 +1,32 @@
 # import-rds.R
 
-shinyFileChoose(input, "data_import_file_r", root=root.dirs, filetypes=c("rds"))
-
 observeEvent(input$data_rds, {
-    output$data_import_r_filename = renderText("select a *.Rds file from a previous session")
-    showModal(
-        modalDialog(title = "Previous Session",
-            fluidRow(
-                column(2, shinyFilesButton("data_import_file_r", label = "Browse...", title = "", multiple = F)),
-                column(10, verbatimTextOutput("data_import_r_filename"))
-            ),
-            size = "l",
-            footer = tagList(modalButton("Cancel"), actionButton("data_import_action_r", "Import")))
+    f = rstudioapi::selectFile(
+        caption = "Select R Object File (*.rds)",
+        label = "Select",
+        path = rstudioapi::getActiveProject(),
+        filter = "RDS Files (*.rds)",
+        existing = T
     )
-})
 
-observeEvent(input$data_import_file_r, {
-    if (is.integer(input$data_import_file_r)) {
+    if (!is.null(f)) {
+        f = normalizePath(f)
 
-    } else {
-        fi = parseFilePaths(root=root.dirs, selection = input$data_import_file_r)
-        output$data_import_r_filename = renderText(fi$datapath)
-    }
-})
-
-observeEvent(input$data_sample, {
-    obj = readRDS(system.file("extdata/FIPHA_SAMPLE_DATASET.rds", package = "FiPhA"))
-
-    for (n in names(obj)) {
-        if (n == "raw") {
-            for (j in names(obj$raw)) {
-                obj$raw[[j]] = copy(obj$raw[[j]]) # loaded from disk, need to set .internal.selfref ptr somehow
-            }
+        if (file.exists(f)) {
+            obj = readRDS(f)
+            setCurrentSession(obj)
+        } else {
+            cli::cli_alert_danger(sprintf("specified file %s does not exist", cli::col_red(f)))
         }
-        data[[n]] = obj[[n]]
     }
 
     refreshDatasetChoices()
 })
 
-observeEvent(input$data_import_action_r, {
-    if (is.integer(input$data_import_file_r)) {
+observeEvent(input$data_sample, {
+    obj = readRDS(system.file("extdata/FIPHA_SAMPLE_DATASET.rds", package = "FiPhA"))
 
-    } else {
-        fi = parseFilePaths(root=root.dirs, selection = input$data_import_file_r)
+    setCurrentSession(obj)
 
-        obj = readRDS(fi$datapath)
-
-        for (n in names(obj)) {
-            if (n == "raw") {
-                for (j in names(obj$raw)) {
-                    obj$raw[[j]] = copy(obj$raw[[j]]) # loaded from disk, need to set .internal.selfref ptr somehow
-                }
-            }
-            data[[n]] = obj[[n]]
-        }
-    }
-    removeModal()
     refreshDatasetChoices()
 })

@@ -32,6 +32,7 @@ Imports:
     R.utils,
     readr,
     readxl,
+    rstudioapi,
     scales,
     shiny,
     shinycssloaders,

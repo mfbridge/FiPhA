@@ -9,8 +9,7 @@ observeEvent(input$data_new_xlcsv, {
     showModal(
         modalDialog(title = "Import a tabular dataset", size = "l", fade = F, footer = tagList(modalButton("Cancel"), actionButton("data_new_xlcsv_finish", "Import")),
             fluidRow(
-                column(2, shinyFilesButton("data_new_xlcsv_file", label = "Browse...", title = "", multiple = T)),
-                column(10, verbatimTextOutput("data_new_xlcsv_name"))
+                column(12, fileInput("data_new_xlcsv_file", NULL, multiple = T, accept = c(".xlsx", ".csv"), width = "100%"))
             ),
             fluidRow(
                 column(3, numericInput("data_new_header_row", "Header Row #", min = 1, value = default$import_header_row)),
@@ -23,20 +22,11 @@ observeEvent(input$data_new_xlcsv, {
     )
 })
 
-observeEvent(input$data_new_xlcsv_file, {
-    if (is.integer(input$data_new_xlcsv_file)) {
-        # nothing selected
-    } else {
-        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_new_xlcsv_file)
-        output$data_new_xlcsv_name = renderText({ sprintf("%s", paste0(fileinfo$name, collapse=", ")) })
-    }
-})
-
 observeEvent(input$data_new_xlcsv_finish, {
-    if (is.integer(input$data_new_xlcsv_file)) {
-        # nothing selected
-    } else {
-        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_new_xlcsv_file)
+    req(!is.null(input$data_new_xlcsv_file))
+
+    if (nrow(input$data_new_xlcsv_file) >= 1) {
+        fileinfo = input$data_new_xlcsv_file
 
         tryCatch({
             withProgress({
@@ -99,6 +89,7 @@ observeEvent(input$data_new_xlcsv_finish, {
             output$data_new_log = renderText(as.character(w))
         }, finally = \() {
         })
+
         removeModal()
         refreshDatasetChoices()
     }

@@ -2,15 +2,13 @@
 
 .tdt.temp = reactiveValues()
 
-shinyDirChoose(input, "data_import_tdt_dir", root=root.dirs, filetypes=c("tsq","tev"))
-
 observeEvent(input$data_tdt, {
     .tdt.temp$headers = NULL
     output$data_import_tdt_path = renderText("select a folder that contains both a .tsq & .tev file")
     showModal(
         modalDialog(title = "TDT Fiber Photometry Gizmo",
             fluidRow(
-                column(2, shinyDirButton("data_import_tdt_dir", "Directory", "")),
+                column(2, actionButton("data_import_tdt_dir", "Directory", width = "100%")),
                 column(10, verbatimTextOutput("data_import_tdt_path"))
             ),
             fluidRow(
@@ -22,34 +20,43 @@ observeEvent(input$data_tdt, {
 })
 
 observeEvent(input$data_import_tdt_dir, {
-    if (is.integer(input$data_import_tdt_dir)) {
 
-    } else {
-        di = parseDirPath(roots=root.dirs, selection = input$data_import_tdt_dir)
-        output$data_import_tdt_path = renderText(file.path(di))
-        tsq = parse_tsq(file.path(di, dir(di, "*.tsq")))
-        only.ch = tsq[!(code %in% c(1, 2)), .(code_c, nch = length(unique(channel)), freq = unique(frequency)), by = .(code_c)][nch == 1 & freq > 0,]
-        streams.pc = tsq[str_starts(code_c, "P"), unique(str_sub(code_c, 1, 3))]
+    d = rstudioapi::selectDirectory(
+        caption = "Select R Object File (*.rds)",
+        label = "Select",
+        path = rstudioapi::getActiveProject()
+    )
 
-        .tdt.temp$headers = tsq
+    if (!is.null(d)) {
+        d = normalizePath(d)
 
-        updatePickerInput(session, "data_import_tdt_streams",
-            choices = c(only.ch$code_c, streams.pc),
-            selected = c(only.ch$code_c, streams.pc),
-            choicesOpt = list(subtext = c(paste(only.ch$freq, "Hz"), rep("\u238d", length(streams.pc)))))
+        if (dir.exists(d)) {
+            output$data_import_tdt_path = renderText(file.path(d))
+            tsq = parse_tsq(file.path(d, dir(d, "*.tsq")))
+            only.ch = tsq[!(code %in% c(1, 2)), .(code_c, nch = length(unique(channel)), freq = unique(frequency)), by = .(code_c)][nch == 1 & freq > 0,]
+            streams.pc = tsq[str_starts(code_c, "P"), unique(str_sub(code_c, 1, 3))]
+
+            .tdt.temp$headers = tsq
+
+            updatePickerInput(session, "data_import_tdt_streams",
+                choices = c(only.ch$code_c, streams.pc),
+                selected = c(only.ch$code_c, streams.pc),
+                choicesOpt = list(subtext = c(paste(only.ch$freq, "Hz"), rep("\u238d", length(streams.pc)))))
+
+            .tdt.temp$path = d
+
+        } else {
+            cli::cli_alert_danger(sprintf("specified directory %s does not exist", cli::col_red(d)))
+        }
     }
 })
 
 observeEvent(input$data_import_tdt_action, {
-    if (is.integer(input$data_import_tdt_dir)) {
-
-    } else {
+    if (!is.null(.tdt.temp$path)) {
         req(.tdt.temp$headers)
 
-        di = parseDirPath(roots=root.dirs, selection = input$data_import_tdt_dir)
-        output$data_import_tdt_path = renderText(file.path(di))
-        tev = read.tdt(file.path(di), streams = input$data_import_tdt_streams, .cached.headers = .tdt.temp$headers)
-        .str = file.path(di, dir(di, "*.tsq"))
+        tev = read.tdt(file.path(.tdt.temp$path), streams = input$data_import_tdt_streams, .cached.headers = .tdt.temp$headers)
+        .str = file.path(.tdt.temp$path, dir(.tdt.temp$path, "*.tsq"))
 
         data$raw[[.str]] = tev
 
@@ -60,7 +67,7 @@ observeEvent(input$data_import_tdt_action, {
         # create a new metadata entry named as the imported filename
         data$meta = append(data$meta,
                            setNames(list(list(file = .str,
-                                              path = normalizePath(di),
+                                              path = normalizePath(.tdt.temp$path),
                                               time = "(time)")),
                                     .str))
 
