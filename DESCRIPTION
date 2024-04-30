@@ -40,7 +40,8 @@ Imports:
     shinyjs,
     shinyWidgets,
     stringr,
-    writexl
+    writexl,
+    viridis
 Suggests: 
     bit64,
     devtools,
