@@ -132,11 +132,12 @@ palette_index = function(pal, n) {
     if (is.null(pal)) return("#ff00ff")
 
     if (length(pal) > 1) {
-        return(pal[[1 + n %% length(pal)]])
+        return(pal[1 + n %% length(pal)])
 
     } else {
         if (pal %in% names(palettes)) {
-            return(palettes[[pal]][[1 + n %% length(palettes[[pal]])]]) # cycle through colors
+            idx = 1 + (n-1) %% length(palettes[[pal]])
+            return(palettes[[pal]][idx]) # cycle through colors
         } else {
             return("#ff00ff")
         }
