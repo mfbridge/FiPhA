@@ -72,7 +72,7 @@ data.ui = nav("Datasets",
                                             "Y axis grid lines"="y_grid",
                                             "Y2 axis grid lines"="y2_grid",
                                             "Color secondary axes and grid lines"="y2_color"
-                                        ), selected = c("y2_color", "shade_binary", "x_grid", "y_grid", "y2_grid")
+                                        ), selected = c("y2_color", "shade_binary", "x_grid", "y_grid")
                                     )
 
                             )
