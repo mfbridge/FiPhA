@@ -51,4 +51,4 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 URL: https://mfbridge.github.io/FiPhA/
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1

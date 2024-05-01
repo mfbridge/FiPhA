@@ -5,7 +5,7 @@
 #'
 #' @examples
 #' # start in a browser
-#' FiPhA::FiPhA(launch.browser = T)
+#' # FiPhA::FiPhA(launch.browser = T)
 #'
 #' @export
 #'

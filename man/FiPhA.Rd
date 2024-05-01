@@ -11,6 +11,6 @@ Starts the Shiny user interface application.
 }
 \examples{
 # start in a browser
-FiPhA::FiPhA(launch.browser = T)
+# FiPhA::FiPhA(launch.browser = T)
 
 }
