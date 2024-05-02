@@ -126,13 +126,28 @@ palettes = append(palettes, list(
     rocket = viridis::viridis_pal(option = "rocket")(6),
     turbo = viridis::viridis_pal(option = "turbo")(6)
 ))
+palettes = append(palettes, list(
+    viridis_reverse = viridis::viridis_pal(option = "viridis", direction = -1)(6),
+    magma_reverse = viridis::viridis_pal(option = "magma", direction = -1)(6),
+    plasma_reverse = viridis::viridis_pal(option = "plasma", direction = -1)(6),
+    inferno_reverse = viridis::viridis_pal(option = "inferno", direction = -1)(6),
+    cividis_reverse = viridis::viridis_pal(option = "cividis", direction = -1)(6),
+    mako_reverse = viridis::viridis_pal(option = "mako", direction = -1)(6),
+    rocket_reverse = viridis::viridis_pal(option = "rocket", direction = -1)(6),
+    turbo_reverse = viridis::viridis_pal(option = "turbo", direction = -1)(6)
+))
 
 
-palette_index = function(pal, n) {
+palette_index = function(pal, n, viridis.max = 6) {
     if (is.null(pal)) return("#ff00ff")
 
     if (length(pal) > 1) {
         return(pal[1 + n %% length(pal)])
+    } else if (pal %in% c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")) {
+        return(viridis::viridis_pal(begin = 0, end = 1, direction = 1, option = pal)(viridis.max)[n])
+
+    } else if (pal %in% c("viridis_reverse", "magma_reverse", "plasma_reverse", "inferno_reverse", "cividis_reverse", "mako_reverse", "rocket_reverse", "turbo_reverse")) {
+        return(viridis::viridis_pal(begin = 0, end = 1, direction = -1, option = str_replace(pal, "_reverse", ""))(viridis.max)[n])
 
     } else {
         if (pal %in% names(palettes)) {

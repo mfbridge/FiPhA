@@ -29,6 +29,8 @@ data.ui = nav("Datasets",
                    tags$hr(style="margin: 0.4rem;"),
                    actionLink("data_rescale", "linear scaling"),
                    actionLink("data_norm", "normalize"),
+                   tags$hr(style="margin: 0.4rem;"),
+                   actionLink("data_tags", "tags"),
                    circle = F, label = "Transform", size = "xs", inline = T, status = "info"
                ),
                 dropdownButton(
@@ -61,9 +63,9 @@ data.ui = nav("Datasets",
                                             list(type="checkbox", id = "data_scale_y_y2", text = "plot percent change", checked = F))
                                     ),
 
-                                    esquisse::palettePicker("pal1", "Line Palette", choices = palettes, selected = "turbo", textColor = "#e0e0e0", pickerOpts = list(size=6), plainColor = T),
-                                    esquisse::palettePicker("pal2", "Area Palette", choices = palettes, selected = "turbo", textColor = "#e0e0e0", pickerOpts = list(size=6), plainColor = T),
-                                    numericInput("data_plot_line_width", label = "Line Width", value = 0.5, min = 0, step = 0.05),
+                                    esquisse::palettePicker("pal1", "Line Palette", choices = palettes, selected = "rocket", textColor = "#e0e0e0", pickerOpts = list(size=10), plainColor = T),
+                                    esquisse::palettePicker("pal2", "Area Palette", choices = palettes, selected = "mako_reverse", textColor = "#e0e0e0", pickerOpts = list(size=10), plainColor = T),
+                                    numericInput("data_plot_line_width", label = "Line Width", value = 0.75, min = 0, step = 0.05),
                                     prettyCheckboxGroup("data_plot_options", label = "Options",
                                         choices = list(
                                             "Use dataset name as plot title"="title",
