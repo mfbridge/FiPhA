@@ -278,7 +278,7 @@ output$data_plot = renderPlotly({
             type = "scatter",
             mode = "lines",
             visible = ifelse(shade.binary, !is.binary[[1]], T),
-            line = list(color = palette_index(input$pal1, pal1index), width = input$data_plot_line_width)
+            line = list(color = palette_index(input$pal1, pal1index, viridis.max = length(input$data_plot_y)), width = input$data_plot_line_width)
         )
 
         # user might have selected a binary variable first
@@ -286,9 +286,9 @@ output$data_plot = renderPlotly({
             figure = figure |>
                 add_trace(x = ~get(input$data_plot_x), y = ~.empty,
                     type = "scatter", mode = "markers",
-                    marker = list(color = palette_index(input$pal2, pal2index), symbol = "square"),
+                    marker = list(color = palette_index(input$pal2, pal2index, viridis.max = length(input$data_plot_y)), symbol = "square"),
                     name = input$data_plot_y[[1]], inherit = F)
-            shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[1]], .time, palette_index(input$pal2, pal2index), input$pal2alpha))
+            shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[1]], .time, palette_index(input$pal2, pal2index, viridis.max = length(input$data_plot_y)), input$pal2alpha))
             pal2index = pal2index + 1
         } else {
             pal1index = pal1index + 1
@@ -349,6 +349,8 @@ output$data_plot = renderPlotly({
             figure = figure |> layout(yaxis = list(tickformat = ".1%"))
         }
 
+        binary.count = Reduce(sum, is.binary, 0)
+
         # programmatically add other traces
         if (length(input$data_plot_y) > 1) {
             figure = figure %>% layout(margin = list(r = 0))
@@ -360,9 +362,10 @@ output$data_plot = renderPlotly({
                     figure = figure |>
                         add_trace(x = ~get(input$data_plot_x), y = ~.empty,
                             type = "scatter", mode = "markers",
-                            marker = list(color = palette_index(input$pal2, pal2index), symbol = "square"),
+                            marker = list(color = palette_index(input$pal2, pal2index, viridis.max = binary.count), symbol = "square"),
                             name = input$data_plot_y[[y2i]], inherit = F)
-                    shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[y2i]], .time, palette_index(input$pal2, pal2index), input$pal2alpha))
+                    shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[y2i]], .time,
+                                palette_index(input$pal2, pal2index, viridis.max = binary.count), input$pal2alpha))
                     pal2index = pal2index + 1
 
 
@@ -376,7 +379,7 @@ output$data_plot = renderPlotly({
                         yaxis = paste0("y", idx),
                         name = input$data_plot_y[[y2i]],
                         visible = T,
-                        type = "scatter", mode = "lines", line = list(width = input$data_plot_line_width, color = palette_index(input$pal1, pal1index))
+                        type = "scatter", mode = "lines", line = list(width = input$data_plot_line_width, color = palette_index(input$pal1, pal1index, viridis.max = length(input$data_plot_y)))
                     )
 
                     # make add_trace() call
@@ -389,8 +392,8 @@ output$data_plot = renderPlotly({
                             figure,
                             list(tickmode = "sync", nticks = 15, side = "right", overlaying = "y",
                                 tickfont = list(size = input$data_font_size, family = input$data_font_family),
-                                color = ifelse(color.ticks, palette_index(input$pal1, pal1index), "#000000"),
-                                tickcolor = ifelse(color.ticks, palette_index(input$pal1, pal1index), "#000000"),
+                                color = ifelse(color.ticks, palette_index(input$pal1, pal1index, viridis.max = length(input$data_plot_y)), "#000000"),
+                                tickcolor = ifelse(color.ticks, palette_index(input$pal1, pal1index, viridis.max = length(input$data_plot_y)), "#000000"),
                                 title = sprintf("<b>%s</b>", input$data_plot_y[[y2i]]), automargin = T,
                                 titlefont = list(size = input$data_font_size),
                                 showgrid = "y2_grid" %in% input$data_plot_options,
