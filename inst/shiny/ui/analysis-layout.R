@@ -113,9 +113,10 @@ analysis.ui = navbarMenu("Analysis",
                     virtualSelectInput("summary_model_type", NULL, selected = NULL, placeholder = "Model Type", width = "100%", choices = c("One-Way ANOVA"="one", "Two-Way ANOVA"="two", "Repeated Measures ANOVA"="rep")),
                     div(style = "font-size: 0.75rem;", uiOutput("summary_model_info") ),
                     virtualSelectInput("summary_series", "Data", choices = c(), multiple = T, placeholder = "Series", optionHeight = "24rem", width = "100%"),
-                    virtualSelectInput("summary_fixed_effects", "Fixed Effect(s)", choices = c("Dataset", "Series", "Event #", "Interval"), selected = "Interval", multiple = T, placeholder = "Main/Fixed Effect(s)", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_fixed_effects", "Fixed Effect(s)", choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), selected = "Interval", multiple = T, placeholder = "Main/Fixed Effect(s)", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_fixed_custom", "Custom factor", choices = c(), selected = c(), multiple = T, placeholder = "Tags", width = "100%", optionHeight = "24rem"),
                     virtualSelectInput("summary_interaction_terms", "Interaction(s)", choices = c(), multiple = T, placeholder = "Interaction(s)", optionHeight = "24rem", width = "100%"),
-                    virtualSelectInput("summary_random_effects", "Random Effect(s)" , choices = c("Dataset", "Series", "Event #", "Interval"), selected = "Event #", multiple = T, placeholder = "Random Effect(s)", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_random_effects", "Random Effect(s)" , choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), selected = "Event #", multiple = T, placeholder = "Random Effect(s)", optionHeight = "24rem", width = "100%"),
 
                 ),
                 card(
@@ -133,8 +134,8 @@ analysis.ui = navbarMenu("Analysis",
                         )
                     ),
                     layout_columns(col_widths = c(6, 6),
-                        virtualSelectInput("summary_plot_color", NULL, choices = c("Dataset", "Series", "Event #", "Interval"), multiple = T, maxValues = 1, placeholder = "color", optionHeight = "24rem", width = "100%"),
-                        virtualSelectInput("summary_plot_facet", NULL, choices = c("Dataset", "Series", "Event #", "Interval"), multiple = T, maxValues = 1, placeholder = "facet", optionHeight = "24rem", width = "100%")
+                        virtualSelectInput("summary_plot_color", NULL, choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), multiple = T, maxValues = 1, placeholder = "color", optionHeight = "24rem", width = "100%"),
+                        virtualSelectInput("summary_plot_facet", NULL, choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), multiple = T, maxValues = 1, placeholder = "facet", optionHeight = "24rem", width = "100%")
                     ),
                     plotlyOutput("summary_boxplot", fill = T)
                 )

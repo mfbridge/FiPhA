@@ -60,6 +60,7 @@ server = function(input, output, session) {
     source("datasets/remove.R", local = T)
     source("datasets/down.R", local = T)
     source("datasets/norm.R", local = T)
+    source("datasets/tags.R", local = T)
 
     # events tab
     source("events/new.R", local = T)

@@ -166,9 +166,10 @@ observeEvent(c(input$events_dataset2, input$events_variables, input$events_type,
 
 
 ui.tags = tagList(
-    fluidRow(
-        column(6, pickerInput("events_dataset2", NULL, choices = c(), multiple = F)),
-        column(6, textInput("events_name", "Name", "", width = "100%", placeholder = "New Event Series"))
+    layout_columns(col_widths = c(6, 6, 6),
+        pickerInput("events_dataset2", NULL, choices = c(), multiple = F, width = "100%"),
+        textInput("events_name", "Name", "", width = "100%", placeholder = "New Event Series"),
+        virtualSelectInput("events_tags", NULL, choices = c(), showValueAsTags = T, search = T, allowNewOption = T, width = "100%", multiple = T, placeholder = "Tags")
     ),
 
     fluidRow(
@@ -268,6 +269,9 @@ observeEvent(input$events_new_finish, {
         #print(new.name)
         data$series[[input$events_dataset2]][[new.name]] = list()
 
+
+        data$series[[input$events_dataset2]][[new.name]]$tags = input$events_tags
+
         if (input$events_type == "binary") data$series[[input$events_dataset2]][[new.name]]$signal = list(type = "binary", variable = input$events_binary_variable)
         else if (input$events_type == "binaryinv") data$series[[input$events_dataset2]][[new.name]]$signal = list(type = "binaryinv", variable = input$events_binary_variable)
         else if (input$events_type == "binned") data$series[[input$events_dataset2]][[new.name]]$signal = list(type = "binned", start = input$events_binned_start, length = input$events_binned_length)
@@ -351,12 +355,18 @@ observeEvent(input$events_dataset2, {
     updatePickerInput(session, "events_binary_variable", choices = c(common.vars), selected = input$events_binary_variable)
     updatePickerInput(session, "events_peakwindow_variable", choices = c(common.vars), selected = input$events_peakwindow_variable)
     updatePickerInput(session, "events_variables", choices = c(common.vars), selected = input$events_variables)
+
+    tag.choices = unique(unlist(lapply(data$meta, \(d) return(d$tags))))
+    tags.selected = ifelse(is.null(data$meta[[input$events_dataset2]]$tags), character(0), data$meta[[input$events_dataset2]]$tags)
+    updateVirtualSelect("events_tags", choices = tag.choices, selected = tags.selected)
 })
 
 observeEvent(input$events_new, {
     showModal(
         modalDialog(title = "New Event Series", size = "l", footer = tagList(modalButton("Close"), actionButton("events_new_finish", "Create")), ui.tags)
     )
+
+    # tags
 
     updatePickerInput(session, "events_dataset2", choices = names(data$meta), selected = input$events_dataset)
 

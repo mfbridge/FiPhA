@@ -78,6 +78,37 @@ observe({
     }
 })
 
+observe({
+    if ("Custom" %in% input$summary_fixed_effects) {
+        shinyjs::show("summary_fixed_custom")
+    } else {
+        shinyjs::hide("summary_fixed_custom")
+    }
+})
+
+observeEvent(input$summary_series, {
+    req(input$summary_series)
+
+    tag.set = c()
+
+    for (sel in input$summary_series) {
+        f = str_split(sel, "!!")[[1]][[1]]
+        s = str_split(sel, "!!")[[1]][[2]]
+        tags.selected = ifelse(is.null(data$series[[f]][[s]]$tags), character(0), data$series[[f]][[s]]$tags)
+
+        tag.set = append(tag.set, tags.selected)
+    }
+
+    tag.set = sort(unique(tag.set))
+
+    updateVirtualSelect("summary_fixed_custom", choices = tag.set, selected = c())
+
+})
+
+# observeEvent(input$summary_fixed_effects, {
+#     print(input$summary_fixed_effects)
+# })
+
 # auto-update plot variables to something sensible when modifying model
 observeEvent(c(input$summary_series, input$summary_fixed_effects, input$interaction_terms, input$random_effects, input$summary_model_type), {
     req(length(input$summary_fixed_effects) > 0)
@@ -126,9 +157,23 @@ output$summary_boxplot = renderPlotly({
     req(input$summary_series)
     req(length(input$summary_series) > 0)
 
+    if ("Custom" %in% input$summary_fixed_effects) {
+        req(length(input$summary_fixed_custom) >= 2)
+    }
+
     if (input$summary_function == "mean") fun = mean
     else if (input$summary_function == "median") fun = median
     else if (input$summary_function == "auc") fun = auc
+
+    tag.set = c()
+    for (sel in input$summary_series) {
+        f = str_split(sel, "!!")[[1]][[1]]
+        s = str_split(sel, "!!")[[1]][[2]]
+        tags.selected = ifelse(is.null(data$series[[f]][[s]]$tags), character(0), data$series[[f]][[s]]$tags)
+
+        tag.set = append(tag.set, tags.selected)
+    }
+    all.tags = sort(unique(tag.set))
 
     for (sel in input$summary_series) {
 
@@ -138,28 +183,42 @@ output$summary_boxplot = renderPlotly({
         .s = data$series[[f]][[s]]
         #browser()
         for (e in 1:length(data$events[[f]][[s]])) {
-            .ed = data$events[[f]][[s]][[e]]
+            .ed = copy(data$events[[f]][[s]][[e]])
 
             for (.i in .s$intervals$name) {
+                #browser()
                 .ss = .ed[`(interval)` == .i, .(f = f, s = s, e = e, i = `(interval)`, X = `(event time)`, Y = get(.s$responses[[1]]))]
 
-                .is = data.table(
-                    Dataset = as.factor(f),
-                    Series = as.factor(s),
-                    `Event #` = as.factor(e),
-                    Interval = as.factor(.i),
-                    `Length (s)` = max(.ss$X) - min(.ss$X) + (.ss$X[[2]]-.ss$X[[1]])
-                )
+                if (nrow(.ss) > 2) {
 
-                if (input$summary_function == "mean") {
-                    values = rbindlist(list(values, data.table(.is, value = mean(.ss$Y, na.rm = T))))
-                } else if (input$summary_function == "median") {
-                    values = rbindlist(list(values, data.table(.is, value = median(.ss$Y, na.rm = T))))
-                } else if (input$summary_function == "auc") {
-                    values = rbindlist(list(values, data.table(.is, value = auc(.ss$Y, .ss$X, na.rm = T))))
+                    if ("Custom" %in% input$summary_fixed_effects) {
+                        .tagged = ifelse(is.null(.s$tags), character(0), .s$tags)
+                        .tagged = .tagged[which(.tagged %in% input$summary_fixed_custom)]
+                        if (length(.tagged) > 1) .tagged = .tagged[[1]]
+                    }
+
+                    .is = data.table(
+                        Dataset = as.factor(f),
+                        Series = as.factor(s),
+                        `Event #` = as.factor(e),
+                        Interval = as.factor(.i),
+                        `Length (s)` = max(.ss$X) - min(.ss$X) + (.ss$X[[2]]-.ss$X[[1]]),
+                        Custom = ifelse("Custom" %in% input$summary_fixed_effects, .tagged, "")
+                    )
+
+                    if (input$summary_function == "mean") {
+                        values = rbindlist(list(values, data.table(.is, value = mean(.ss$Y, na.rm = T))))
+                    } else if (input$summary_function == "median") {
+                        values = rbindlist(list(values, data.table(.is, value = median(.ss$Y, na.rm = T))))
+                    } else if (input$summary_function == "auc") {
+                        values = rbindlist(list(values, data.table(.is, value = auc(.ss$Y, .ss$X, na.rm = T))))
+                    }
                 }
             }
         }
+    }
+    if ("Custom" %in% input$summary_fixed_effects) {
+        values$Custom = factor(values$Custom, levels = input$summary_fixed_custom, ordered = T)
     }
 
     output$summary_download_csv = downloadHandler(
@@ -376,7 +435,12 @@ output$summary_boxplot = renderPlotly({
 
                 # move axis labels to main plot
                 if (length(input$summary_plot_facet) == 0) {
-                    layout.opts$xaxis$title = X
+                    if (!("Custom" %in% input$summary_fixed_effects)) {
+                        layout.opts$xaxis$title = X
+                    } else {
+                        layout.opts$xaxis$title = ""
+                    }
+
                     if (input$summary_function == "mean") layout.opts$yaxis$title = "Mean"
                     else if (input$summary_function == "median") layout.opts$yaxis$title = "Median"
                     else if (input$summary_function == "auc") layout.opts$yaxis$title = "AUC"
@@ -390,10 +454,17 @@ output$summary_boxplot = renderPlotly({
                 }
 
                 if (!is.null(input$summary_plot_color)) {
-                    if ("hzlegend" %in% input$summary_plot_options)
-                        layout.opts$legend = list(title = list(text=sprintf("<b>%s</b>", input$summary_plot_color)), orientation = 'h', y = -0.25, x = 0.5, xanchor = 'center', yanchor = 'top')
-                    else
-                        layout.opts$legend = list(title = list(text=sprintf("<b>%s</b>", input$summary_plot_color)))
+                    if ("Custom" %in% input$summary_fixed_effects) {
+                        .title = ""
+                    } else {
+                        .title = input$summary_plot_color
+                    }
+
+                    if ("hzlegend" %in% input$summary_plot_options) {
+                        layout.opts$legend = list(title = list(text=sprintf("<b>%s</b>", .title)), orientation = 'h', y = -0.25, x = 0.5, xanchor = 'center', yanchor = 'top')
+                    } else {
+                        layout.opts$legend = list(title = list(text=sprintf("<b>%s</b>", .title)))
+                    }
 
                     layout.opts$showlegend = "legend" %in% input$summary_plot_options
                 } else {
@@ -443,7 +514,7 @@ observe({
     req(length(names(data$series)) > 0)
 
     # afaik virtualselects' selected values are just vectors and not a structured list like the choices it can be given, so need to encode the dataset somehow
-    value.list = c()
+    value.list = list()
     series.list = lapply(setNames(names(data$series), names(data$series)), \(f) {
         if (length(names(data$series[[f]])) > 0) {
             raw.values = paste0(f, "!!", names(data$series[[f]]))
