@@ -3,7 +3,7 @@ pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   user-guide: user-guide.html
-last_built: 2024-05-06T15:35Z
+last_built: 2024-05-07T16:13Z
 urls:
   reference: https://mfbridge.github.io/FiPhA/reference
   article: https://mfbridge.github.io/FiPhA/articles
