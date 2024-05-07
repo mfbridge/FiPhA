@@ -145,13 +145,26 @@ output$data_lag_plot = renderPlotly({
 
             signal.values$lag = data.table(Dataset = input$data_dataset, Lag = (1:length(.dt1)) - 1, Autocorrelation = .dt1)
 
-            .gg1 = ggplot(data.table(x = (1:length(.dt1)) - 1, y = .dt1), aes(x = x, y = y)) +
+            tt = data$raw[[.f]][, .(t = get(data$meta[[.f]]$time))][, .(Dt = t - shift(t))][!is.na(Dt), mean(Dt)]
+
+            plot.data = data.table(
+                x = tt * ((1:length(.dt1)) - 1),
+                y = .dt1
+            )
+
+            plot.data2 = data.table(
+                x = tt * (-(1:length(.dt1) - 1)),
+                y = .dt1
+            )
+
+
+            .gg1 = ggplot(rbindlist(list(plot.data, plot.data2)), aes(x = x, y = y)) +
                 geom_hline(yintercept = 0, linetype = "dotted", size = 0.5) +
                 geom_line(size = 0.2, color = "#a02010") +
                 theme_bw(base_size = 9) +
                 scale_x_continuous(expand = c(0, 0)) +
                 scale_y_continuous(expand = c(0, 0)) +
-                labs(x = "Lag", y = "Lag-n Autocorrelation")
+                labs(x = "Lag (sec)", y = "Lag Autocorrelation")
 
             .ggplotly = subplot(ggplotly(.gg1), nrows = 1, titleX = T, titleY = T, margin = 0.05) %>%
                 config(toImageButtonOptions = list(filename = "preview", format = input$plotly_format, height = input$plotly_height, width = input$plotly_width)) %>%

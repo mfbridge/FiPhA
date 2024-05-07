@@ -98,7 +98,7 @@ data.ui = nav("Datasets",
                         tabPanel("lag autocorrelation",
                             fluidRow(
                                 column(4,
-                                    numericInput("data_lag_max", "max lag n", width = "100%", value = 10000, min = 1, step = 1)
+                                    numericInput("data_lag_max", "max lag n", width = "100%", value = 2000, min = 1, step = 1)
                                 )
                             ),
                             fluidRow(column(12, plotlyOutput("data_lag_plot", height = "500px") %>% withSpinner())),
