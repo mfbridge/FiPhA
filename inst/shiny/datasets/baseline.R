@@ -81,6 +81,61 @@ runFits = function() {
                     models[[v]] = list(type = "exponential", a = alpha, b = beta, c = theta)
                 }
 
+            } else if (input$data_baseline_model == "biexp") {
+                # bi-exponential (sum of two)
+
+                models[[v]] = list(converged = F)
+
+                try({
+                    model = nlsr(Y ~ A1 * exp(B1 * X) + A2 * exp(B2 * X),
+                        start = c(A1 = 1.0, B1 = -1.0, A2 = -1.0, B2 = -1.0),
+                        data = data.frame(X = .X, Y = .Y),
+                        control = nlsr.control(list(femax = 1000, jemax = 500))
+                    )
+                    print(summary(model))
+
+                    models[[v]]$converged = model$convInfo$isConv
+
+                    if (models[[v]]$converged) {
+                        Yhat = predict(model, list(X = .X))
+                        print(coefficients(model))
+
+                        models[[v]]$type = "biexp"
+                        models[[v]]$A1= coefficients(model)[["A1"]]
+                        models[[v]]$B1 = coefficients(model)[["B1"]]
+                        models[[v]]$A2= coefficients(model)[["A2"]]
+                        models[[v]]$B2 = coefficients(model)[["B2"]]
+                    }
+                })
+
+            } else if (input$data_baseline_model == "biexp-c") {
+
+                models[[v]] = list(converged = F)
+
+                try({
+                    model = nlsr(Y ~ A1 * exp(B1 * X) + A2 * exp(B2 * X) + C,
+                        start = c(A1 = 1.0, B1 = -1.0, A2 = -1.0, B2 = -1.0, C = 1000),
+                        data = data.frame(X = .X, Y = .Y),
+                        control = nlsr.control(list(femax = 1000, jemax = 500))
+                    )
+                    print(summary(model))
+
+                    models[[v]]$converged = model$convInfo$isConv
+
+                    if (models[[v]]$converged) {
+                        Yhat = predict(model, list(X = .X))
+                        print(coefficients(model))
+
+                        models[[v]]$type = "biexp-c"
+                        models[[v]]$A1= coefficients(model)[["A1"]]
+                        models[[v]]$B1 = coefficients(model)[["B1"]]
+                        models[[v]]$A2= coefficients(model)[["A2"]]
+                        models[[v]]$B2 = coefficients(model)[["B2"]]
+                        models[[v]]$C = coefficients(model)[["C"]]
+                    }
+                })
+
+
             } else if (input$data_baseline_model == "lin") {
                 if (input$data_baseline_params == "least squares") {
                     models[[v]] = list(converged = T) # assume
@@ -169,10 +224,16 @@ observeEvent(input$data_baseline_finish, {
         if ("no_offset" %in% input$data_baseline_options) {
             if (.m$type == "exponential") {
                 offset = .m$c
-            } else {
+            } else if (.m$type == "linear") {
                 offset = .m$b
+            } else if (.m$type == "biexp-c") {
+                offset = .m$C
             }
-            data$raw[[input$data_dataset]][, (sprintf("%s%s", .v, input$data_baseline_suffix)) := fitted.data$data[var == .v, ydiff] + offset] # add offset back
+            if (.m$type %in% c("exponential", "linear", "biexp-c")) {
+                data$raw[[input$data_dataset]][, (sprintf("%s%s", .v, input$data_baseline_suffix)) := fitted.data$data[var == .v, ydiff] + offset] # add offset back
+            } else {
+                data$raw[[input$data_dataset]][, (sprintf("%s%s", .v, input$data_baseline_suffix)) := fitted.data$data[var == .v, ydiff]]
+            }
 
         } else {
             data$raw[[input$data_dataset]][, (sprintf("%s%s", .v, input$data_baseline_suffix)) := fitted.data$data[var == .v, ydiff]]
@@ -206,7 +267,12 @@ observeEvent(input$data_baseline, {
             fluidRow(
                 column(4, pickerInput("data_baseline_var", "Input Variable(s)", c(), width = "100%", multiple = T)),
                 column(4, textInput("data_baseline_suffix", "Output Suffix", " (corrected)")),
-                column(4, pickerInput("data_baseline_model", "Model", choices = c("exponential, y=a*exp(bx)+c"="exp", "linear, y=mx+b"="lin"), width = "100%"))
+                column(4, pickerInput("data_baseline_model", "Model", choices = c(
+                    "y = Mx + B (linear)"="lin",
+                    "y = Ae^Bx + C (exp+c)"="exp",
+                    "y = A1e^B1x + A2e^B2x (biexp)"="biexp",
+                    "y = A1e^B1x + A2e^B2x + C (biexp+c)"="biexp-c"
+                ), width = "100%"))
             ),
             fluidRow(
                 column(2, pickerInput("data_baseline_params", "Estimation", c("auto"="least squares", "manual"), selected = "least squares"),
