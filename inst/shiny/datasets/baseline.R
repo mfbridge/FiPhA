@@ -34,52 +34,39 @@ runFits = function() {
             model = NULL
 
             if (input$data_baseline_model == "exp") {
-                if (input$data_baseline_params == "least squares") {
+                #browser()
+                models[[v]] = list(converged = F)
+
+                try({
+
+                model = nlsr(Y ~ alpha * exp(beta * X) + theta,
+                    start = c(alpha = 100.0, beta = -0.01, theta = 1000.0),
+                    data = data.frame(X = .X, Y = .Y),
+                    control = nlsr.control(list(femax = 1000, jemax = 500))
+                )
+
+                    models[[v]]$converged = model$convInfo$isConv
+
+                if (models[[v]]$converged) {
+                    Yhat = predict(model, list(X = .X))
+
+                    #print(AIC(model))
+                    #print(summary(model))
+                    print(coefficients(model))
+                    #View(model)
                     #browser()
-                    models[[v]] = list(converged = F)
 
-                    try({
+                    updateNumericInput(session, "data_baseline_exp_alpha", value = coefficients(model)[["alpha"]])
+                    updateNumericInput(session, "data_baseline_exp_beta", value = coefficients(model)[["beta"]])
+                    updateNumericInput(session, "data_baseline_exp_theta", value = coefficients(model)[["theta"]])
 
-                    model = nlsr(Y ~ alpha * exp(beta * X) + theta,
-                        start = c(alpha = 100.0, beta = -0.01, theta = 1000.0),
-                        data = data.frame(X = .X, Y = .Y),
-                        control = nlsr.control(list(femax = 1000, jemax = 500))
-                    )
-
-                        models[[v]]$converged = model$convInfo$isConv
-
-                    if (models[[v]]$converged) {
-                        Yhat = predict(model, list(X = .X))
-
-                        #print(AIC(model))
-                        #print(summary(model))
-                        print(coefficients(model))
-                        #View(model)
-                        #browser()
-
-                        updateNumericInput(session, "data_baseline_exp_alpha", value = coefficients(model)[["alpha"]])
-                        updateNumericInput(session, "data_baseline_exp_beta", value = coefficients(model)[["beta"]])
-                        updateNumericInput(session, "data_baseline_exp_theta", value = coefficients(model)[["theta"]])
-
-                        models[[v]]$type = "exponential"
-                        models[[v]]$a = coefficients(model)[["alpha"]]
-                        models[[v]]$b = coefficients(model)[["beta"]]
-                        models[[v]]$c = coefficients(model)[["theta"]]
-                    }
-
-                    })
-
-
-                } else {
-                    alpha = input$data_baseline_exp_alpha
-                    beta = input$data_baseline_exp_beta
-                    theta = input$data_baseline_exp_theta
-
-                    # using user-specified parameters instead
-                    Yhat = alpha * exp(beta * .X) + theta
-
-                    models[[v]] = list(type = "exponential", a = alpha, b = beta, c = theta)
+                    models[[v]]$type = "exponential"
+                    models[[v]]$a = coefficients(model)[["alpha"]]
+                    models[[v]]$b = coefficients(model)[["beta"]]
+                    models[[v]]$c = coefficients(model)[["theta"]]
                 }
+
+                })
 
             } else if (input$data_baseline_model == "biexp") {
                 # bi-exponential (sum of two)
@@ -137,29 +124,19 @@ runFits = function() {
 
 
             } else if (input$data_baseline_model == "lin") {
-                if (input$data_baseline_params == "least squares") {
-                    models[[v]] = list(converged = T) # assume
+                models[[v]] = list(converged = T) # assume
 
-                    model = lm(Y ~ X, data = data.frame(X = .X, Y = .Y), na.action = "na.omit")
-                    Yhat = predict(model, list(X = .X))
+                model = lm(Y ~ X, data = data.frame(X = .X, Y = .Y), na.action = "na.omit")
+                Yhat = predict(model, list(X = .X))
 
-                    print(summary(model))
+                print(summary(model))
 
-                    updateNumericInput(session, "data_baseline_lin_slope", value = coefficients(model)[[2]])
-                    updateNumericInput(session, "data_baseline_lin_intercept", value = coefficients(model)[[1]])
+                updateNumericInput(session, "data_baseline_lin_slope", value = coefficients(model)[[2]])
+                updateNumericInput(session, "data_baseline_lin_intercept", value = coefficients(model)[[1]])
 
-                    models[[v]]$type = "linear"
-                    models[[v]]$m = coefficients(model)[[2]]
-                    models[[v]]$b = coefficients(model)[[1]]
-
-                } else {
-                    slope = input$data_baseline_lin_slope
-                    intercept = input$data_baseline_lin_intercept
-
-                    Yhat = slope * .X + intercept
-
-                    models[[v]] = list(type = "linear", m = slope, b = intercept)
-                }
+                models[[v]]$type = "linear"
+                models[[v]]$m = coefficients(model)[[2]]
+                models[[v]]$b = coefficients(model)[[1]]
             }
 
             if (!is.null(Yhat)) {
@@ -172,26 +149,45 @@ runFits = function() {
     list(data = plot.data, models = models)
 }
 
-observeEvent(c(input$data_baseline_var, input$data_baseline_model, input$data_baseline_params, input$data_baseline_linear_slope, input$data_baseline_linear_intercept, input$data_baseline_exp_alpha, input$data_baseline_exp_beta, input$data_baseline_exp_theta), {
+observeEvent(c(input$data_baseline_var_open, input$data_baseline_var, input$data_baseline_model, input$data_baseline_params, input$data_baseline_linear_slope, input$data_baseline_linear_intercept, input$data_baseline_exp_alpha, input$data_baseline_exp_beta, input$data_baseline_exp_theta), {
     # re-fit model and update plot on any changes
 
+    req(input$data_baseline_var_open == F)
     req(input$data_dataset, input$data_baseline_var)
     req(input$changed != "plotly_afterplot-A")
 
-    plot.data = NULL
+    plot.data = runFits()
 
-    if (input$changed %in% c("data_baseline_linear_slope", "data_baseline_linear_intercept", "data_baseline_exp_alpha", "data_baseline_exp_beta", "data_baseline_exp_theta")) {
-        if (input$data_baseline_params == "least squares") {
-            # avoid duplicate re-fits when parameters are updated while least squares is selected
+    output$data_baseline_diag = renderUI({
+        string = c("")
 
-        } else if (input$data_baseline_params == "manual") {
-            plot.data = runFits()
+        nlen = max(str_length(names(plot.data$models)))
+
+        for (n in names(plot.data$models)) {
+            if (plot.data$models[[n]]$converged) {
+                lls=list()
+                for (nn in names(plot.data$models[[n]])) {
+                    if (!(nn %in% c("converged", "type"))) {
+                        lls = append(lls, sprintf("<span style='color: #a0a0a0; display: inline;'>%3s=</span>%8.3g", nn, plot.data$models[[n]][nn]))
+                    }
+                }
+                string = append(string, sprintf("<span style='color: #20a020; text-align: left; white-space: pre;'><b>%s</b></span><span style='white-space: pre;'>%s</span><br/>", str_pad(n, nlen), paste0(lls, collapse = "    ")))
+            } else {
+                string = append(string, sprintf("<span style='color: #c02020; text-align: left;'><span style='white-space: pre;'><b>%s</b></span> failed to converge.</span><br/>", str_pad(n, nlen)))
+            }
         }
-    } else {
-       plot.data = runFits()
-    }
+
+        HTML(paste0(string, collapse = ""))
+    })
 
     req(!is.null(plot.data))
+
+
+    subi = 1:length(plot.data$data$x)
+    if (length(plot.data$data$x) > 10000) {
+        subi = seq(1, length(plot.data$data$x), floor(length(plot.data$data$x) / 10000))
+    }
+    plot.data$data = plot.data$data[subi, ]
 
     # generate plot
     output$data_baseline_plot = renderPlotly({
@@ -201,7 +197,7 @@ observeEvent(c(input$data_baseline_var, input$data_baseline_model, input$data_ba
                 geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$y, var = plot.data$data$var, type="Fitted Model"), size = 0.2) +
                 geom_path(data = data.table(x = plot.data$data$x, y = plot.data$data$yhat, var = plot.data$data$var, type="Fitted Model"), size = 0.3, color = "red") +
                 facet_wrap2(~ var + type, ncol = 2, scales = "free_y") +
-                theme_minimal() + theme(axis.text.x = element_blank(), panel.spacing.x = unit(0, "pt"), panel.spacing.y = unit(18, "pt")) + labs(x = NULL, y = NULL)
+                theme_minimal() + theme(axis.text.x = element_blank(), panel.spacing.x = unit(0, "pt"), panel.spacing.y = unit(12, "pt")) + labs(x = NULL, y = NULL)
 
         }) %>% config() %>%
             layout(legend = list(orientation = "h", xanchor = "center", yanchor = "bottom", x = 0.5, y = -0.25), xaxis = list(tickmode = "auto"), yaxis = list(tickmode = "auto")) %>%
@@ -275,18 +271,10 @@ observeEvent(input$data_baseline, {
                 ), width = "100%"))
             ),
             fluidRow(
-                column(2, pickerInput("data_baseline_params", "Estimation", c("auto"="least squares", "manual"), selected = "least squares"),
-                ),
-                column(6,
-                    fluidRow(id = "data_baseline_linear",
-                        column(6, disabled(numericInput("data_baseline_lin_slope", "slope (m)", NA, min = -Inf, max = Inf, step = 1e-6, width = "100%"))),
-                        column(6, disabled(numericInput("data_baseline_lin_intercept", "intercept (b)", NA, min = -Inf, max = Inf, step = 1e-6, width = "100%")))
-                    ),
-
-                    fluidRow(id = "data_baseline_exp",
-                        column(4, disabled(numericInput("data_baseline_exp_alpha", HTML("scale (a)"), NA, min = -Inf, max = Inf, step = 1e-6, width = "100%"))),
-                        column(4, disabled(numericInput("data_baseline_exp_beta", HTML("exponent (b)"), NA, min = -Inf, max = Inf, step = 1e-6, width = "100%"))),
-                        column(4, disabled(numericInput("data_baseline_exp_theta", HTML("offset (c)"), NA, min = -Inf, max = Inf, step = 1e-6, width = "100%")))
+                column(8,
+                    tags$label("Model Diagnostics"), tags$br(),
+                    div(style = "line-height: 0.75rem; font-size: 0.75rem; text-align: left; overflow: scroll; text-wrap: nowrap; font-family: monospace; max-height: 10rem; padding: 0.5rem",
+                        uiOutput("data_baseline_diag", inline = T)
                     )
                 ),
                 column(4, style = "line-height: 0.5rem; font-size: 0.5rem;",
