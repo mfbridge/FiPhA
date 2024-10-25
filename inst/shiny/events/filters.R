@@ -177,22 +177,23 @@ filter.events = function(.events, .filters) {
                         # probably safe to assume `events` is sorted on $start already
                         event.start = events[1, start]
                         .s = events[1, start]
+                        .t = events[1, type]
                         for (j in 1:nrow(events)) {
-                            if (events[j, start] - .s <= aggregate.within) {
+                            if (events[j, start] - .s <= aggregate.within & .t == events[j, type]) {
                                 # event j starts close enough to event j-1, keep going
                                 .s = events[j, end]
+                                .t = events[j, type]
                             } else {
-                                # event j is too far away from current event to keep going, add to list
-                                new.events = rbindlist(list(new.events, data.table(start = event.start, end = events[j-1, end], length = events[j-1, end] - event.start)))
+                                # event j is too far away from current event or no longer the same type to keep going, add to list
+                                new.events = rbindlist(list(new.events, data.table(start = event.start, end = events[j-1, end], length = events[j-1, end] - event.start, type = .t)), use.names = T)
                                 .s = events[j, end]
+                                .t = events[j, type]
                                 event.start = events[j, start]
                             }
-
-                            #print(new.events)
                         }
                         # add final event
 
-                        events = rbindlist(list(new.events, data.table(start = event.start, end = events[nrow(events), end], length = events[nrow(events), end] - event.start)))
+                        events = rbindlist(list(new.events, data.table(start = event.start, end = events[nrow(events), end], length = events[nrow(events), end] - event.start, type = events[nrow(events), type])), use.names = T)
                     }
 
                 } else if (i == "keep.n.within.x") {

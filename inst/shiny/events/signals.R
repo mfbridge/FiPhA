@@ -114,12 +114,12 @@ extract_event_datasets = function(events, .intervals, series.name = "") {
                         # do nothing
 
                     } else if (data$series[[f]][[s]]$normalization$type == "z" & event.dataset[`(interval)` == data$series[[f]][[s]]$normalization$reference, .N] > 0) {
-                        fun = ifelse(data$series[[f]][[s]]$normalization$summary == "mean", mean, median)
+                        fun = get(data$series[[f]][[s]]$normalization$summary) # ifelse(data$series[[f]][[s]]$normalization$summary == "mean", mean, median)
                         reference = event.dataset[`(interval)` == data$series[[f]][[s]]$normalization$reference, .(mu = fun(get(r), na.rm = T), sig = sd(get(r), na.rm = T))]
                         event.dataset[, (r) := (get(r) - reference$mu) / reference$sig]
 
                     } else if (data$series[[f]][[s]]$normalization$type == "%" & event.dataset[`(interval)` == data$series[[f]][[s]]$normalization$reference, .N] > 0) {
-                        fun = ifelse(data$series[[f]][[s]]$normalization$summary == "mean", mean, median)
+                        fun = get(data$series[[f]][[s]]$normalization$summary) #ifelse(data$series[[f]][[s]]$normalization$summary == "mean", mean, median)
                         reference = event.dataset[`(interval)` == data$series[[f]][[s]]$normalization$reference, .(mu = fun(get(r), na.rm = T), sig = sd(get(r), na.rm = T))]
                         event.dataset[, (r) := (get(r) - reference$mu) / reference$mu * 100]
 
@@ -183,6 +183,8 @@ observeEvent(c(input$events_type, input$events_binary_variable, input$events_bin
 
         } else if (input$events_type == "list") {
             updateTextInput(session, "events_name", placeholder = sprintf("list of %d events", nrow(excel_to_R(input$events_fixed_list))))
+        } else if (input$events_type == "cba") {
+            updateTextInput(session, "events_name", placeholder = sprintf("%%start%% to %%end%%, %%type%%"))
         }
     }
 })
@@ -204,6 +206,7 @@ toggleEventTypeOptions = function() {
         shinyjs::hide("events_scorepeak_")
         shinyjs::hide("events_peakwindow_")
         shinyjs::hide("events_list_")
+        shinyjs::hide("events_list_cba_")
 
     } else if (input$events_type == "binned") {
         shinyjs::hide("events_binary_")
@@ -211,6 +214,7 @@ toggleEventTypeOptions = function() {
         shinyjs::hide("events_scorepeak_")
         shinyjs::hide("events_peakwindow_")
         shinyjs::hide("events_list_")
+        shinyjs::hide("events_list_cba_")
 
     } else if (input$events_type == "scorepeak") {
         shinyjs::hide("events_binary_")
@@ -218,6 +222,7 @@ toggleEventTypeOptions = function() {
         shinyjs::show("events_scorepeak_")
         shinyjs::hide("events_peakwindow_")
         shinyjs::hide("events_list_")
+        shinyjs::hide("events_list_cba_")
 
     } else if (input$events_type == "peak") {
         shinyjs::hide("events_binary_")
@@ -225,6 +230,7 @@ toggleEventTypeOptions = function() {
         shinyjs::hide("events_scorepeak_")
         shinyjs::show("events_peakwindow_")
         shinyjs::hide("events_list_")
+        shinyjs::hide("events_list_cba_")
 
 
     } else if (input$events_type == "list") {
@@ -233,7 +239,15 @@ toggleEventTypeOptions = function() {
         shinyjs::hide("events_scorepeak_")
         shinyjs::hide("events_peakwindow_")
         shinyjs::show("events_list_")
+        shinyjs::hide("events_list_cba_")
 
 
+    } else if (input$events_type == "cba") {
+        shinyjs::hide("events_binary_")
+        shinyjs::hide("events_binned_")
+        shinyjs::hide("events_scorepeak_")
+        shinyjs::hide("events_peakwindow_")
+        shinyjs::hide("events_list_")
+        shinyjs::show("events_list_cba_")
     }
 }
