@@ -2,18 +2,50 @@
 
 spectra.reference = reactiveValues()
 spectra.preview = reactiveValues()
+spectra.temp = reactiveValues(files = c(), reference = "")
 
-shinyFileChoose(input, "data_import_spectrometry_file", root=root.dirs, filetypes=c("txt"))
-shinyFileChoose(input, "data_import_spectrometry_reference", root=root.dirs, filetypes=c("csv"))
+#shinyFileChoose(input, "data_import_spectrometry_file", root=root.dirs, filetypes=c("txt"))
+#shinyFileChoose(input, "data_import_spectrometry_reference", root=root.dirs, filetypes=c("csv"))
+
+observeEvent(input$data_import_spectrometry_file, {
+    f = rstudioapi::selectFile(
+        caption = "Select a spectrometer recording (*.txt)",
+        label = "Select",
+        path = rstudioapi::getActiveProject(),
+        filter = "TXT files (*.txt)",
+        existing = T
+    )
+
+    if (!is.null(f)) {
+        spectra.temp$files = c(spectra.temp$files, path.expand(f))
+        updatePickerInput(session, "data_spectra_preview_file", choices = basename(spectra.temp$files), selected = basename(f))
+    }
+})
+
+observe({
+    output$data_import_spectrometry_filename = renderText({
+        if (length(spectra.temp$files) == 0) {
+            sprintf("select one or more spectrometer recordings (*.txt)")
+        } else {
+            sprintf("%d file(s) selected:\n%s", length(spectra.temp$files), paste(basename(spectra.temp$files), collapse = "\n"))
+        }
+    })
+})
+
+observeEvent(input$data_import_spectrometry_file_clear, {
+    spectra.temp$files = c()
+})
 
 observeEvent(input$data_spectra_preview_file, {
-    if (is.integer(input$data_import_spectrometry_file)) {
+    if (length(spectra.temp$files) == 0) {
 
     } else {
         withProgress({
-            fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
+            #fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
+            fi = spectra.temp$files
 
-            preview.file = as.data.table(fi)[name == input$data_spectra_preview_file, datapath]
+            #preview.file = as.data.table(fi)[name == input$data_spectra_preview_file, datapath]
+            preview.file = fi[endsWith(fi, input$data_spectra_preview_file)]
 
             # ext= txt
             wavelengths = as.character(read_tsv(preview.file,
@@ -38,25 +70,29 @@ observeEvent(input$data_spectra_preview_file, {
     }
 })
 
-observeEvent(c(input$data_import_spectrometry_file, input$data_spectra_header_row, input$data_spectra_data_row), {
-    #
-    if (is.integer(input$data_import_spectrometry_file)) {
-
-    } else {
-        withProgress({
-            fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
-            if (nrow(fi) == 1) {
-                output$data_import_spectrometry_filename = renderText(fi$datapath)
-            } else {
-                output$data_import_spectrometry_filename = renderText(sprintf("%0.0f files selected", nrow(fi)))
-            }
-            #browser()
-            fit = as.data.table(fi)
-            updatePickerInput(session, "data_spectra_preview_file", choices = fit[, name], selected = fit[1, name])
-
-        }, message = "parsing header information...")
-    }
-})
+# observeEvent(c(input$data_import_spectrometry_file, input$data_spectra_header_row, input$data_spectra_data_row), {
+#     #
+#     #if (is.integer(input$data_import_spectrometry_file)) {
+#     if (length(spectra.temp$files) == 0) {
+#
+#
+#     } else {
+#         withProgress({
+#             #fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
+#             fi = spectra.temp$files
+#
+#             # if (nrow(fi) == 1) {
+#             #     output$data_import_spectrometry_filename = renderText(fi$datapath)
+#             # } else {
+#             #     output$data_import_spectrometry_filename = renderText(sprintf("%0.0f files selected", nrow(fi)))
+#             # }
+#             #browser()
+#             fit = as.data.table(fi)
+#             updatePickerInput(session, "data_spectra_preview_file", choices = fit[, name], selected = fit[1, name])
+#
+#         }, message = "parsing header information...")
+#     }
+# })
 
 observeEvent(c(input$data_spectra_minimum, input$data_spectra_maximum), {
     updateSliderInput(session, "data_spectra_range1", min = input$data_spectra_minimum, max = input$data_spectra_maximum, value = input$data_spectra_range1)
@@ -154,12 +190,22 @@ observe({
 })
 
 observeEvent(input$data_import_spectrometry_reference, {
-    if (is.integer(input$data_import_spectrometry_reference)) {
+    f = rstudioapi::selectFile(
+        caption = "Select a spectra reference (*.csv)",
+        label = "Select",
+        path = rstudioapi::getActiveProject(),
+        filter = "CSV files (*.csv)",
+        existing = T
+    )
+
+    #if (is.integer(input$data_import_spectrometry_reference)) {
+    if (is.null(f)) {
 
     } else {
-        fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_reference)
-        output$data_import_spectrometry_reference_filename = renderText(fi$datapath)
-        spectra.reference$dataset = as.data.table(read_csv(fi$datapath, na = default$missing_values))
+        spectra.temp$reference = path.expand(f)
+        #fi = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_reference)
+        output$data_import_spectrometry_reference_filename = renderText(spectra.temp$reference)
+        spectra.reference$dataset = as.data.table(read_csv(spectra.temp$reference, na = default$missing_values))
     }
 })
 
@@ -218,14 +264,15 @@ observeEvent(input$data_new_spectra, {
     spectra.preview$data.series = NULL
     spectra.preview$wavelengths = NULL
     output$data_spectra_preview = renderPlot({})
-    output$data_import_spectrometry_filename = renderText("select one or more tab-delimited spectrometer recording files (*.txt)")
+    #output$data_import_spectrometry_filename = renderText("select one or more tab-delimited spectrometer recording files (*.txt)")
     output$data_import_spectrometry_reference_filename = renderText("select a file that defines all reference spectra (*.csv)")
     showModal(
         modalDialog(
             fluidRow(
                 tags$label("Spectrometer Data File", style="margin-bottom: 0.5rem;"),
-                column(2, shinyFilesButton("data_import_spectrometry_file", label = "Browse...", title = "", multiple = T, style = "display: block-inline;")),
-                column(10, verbatimTextOutput("data_import_spectrometry_filename"))
+                #column(2, shinyFilesButton("data_import_spectrometry_file", label = "Browse...", title = "", multiple = T, style = "display: block-inline;")),
+                column(3, actionButton("data_import_spectrometry_file", label = "Add..."), actionButton("data_import_spectrometry_file_clear", label = "Clear")),
+                column(9, verbatimTextOutput("data_import_spectrometry_filename"))
             ),
             fluidRow(
                 column(3, numericInput("data_spectra_header_row", "Wavelength Row (#)", min = 1, value = default$import_spectra_header_row)),
@@ -266,7 +313,8 @@ observeEvent(input$data_new_spectra, {
             div(id = "spectra_linear",
                 fluidRow(
                     tags$label("Spectra Reference File", style = "margin-bottom: 0.5rem;"),
-                    column(2, shinyFilesButton("data_import_spectrometry_reference", label = "Browse...", title = "", multiple = F, style = "display: block-inline;")),
+                    #column(2, shinyFilesButton("data_import_spectrometry_reference", label = "Browse...", title = "", multiple = F, style = "display: block-inline;")),
+                    column(2, actionButton("data_import_spectrometry_reference", label = "Browse...")),
                     column(10, verbatimTextOutput("data_import_spectrometry_reference_filename"))
                 ),
                 fluidRow(
@@ -283,14 +331,24 @@ observeEvent(input$data_new_spectra, {
 })
 
 observeEvent(input$data_import_spectrometry_action, {
-    if (is.integer(input$data_import_spectrometry_file)) {
+    #f = #data_import_spectrometry_file
+    # f = rstudioapi::selectFile(
+    #     caption = "Select a spectrometer recording (*.txt)",
+    #     label = "Select",
+    #     path = rstudioapi::getActiveProject(),
+    #     filter = "TXT files (*.txt)",
+    #     existing = T
+    # )
+
+    if (length(spectra.temp$files) == 0) {
 
     } else {
+        files = spectra.temp$files
 
-        files = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
+        #files = parseFilePaths(root=root.dirs, selection = input$data_import_spectrometry_file)
 
         # going to assume all files imported at the same time are formatted exactly the same so just use the first one's header
-        wavelength.c = as.data.table(read_tsv(files[1, ]$datapath, col_names = F, n_max = 1, na = default$missing_values, skip = input$data_spectra_header_row - 1, show_col_types = F))
+        wavelength.c = as.data.table(read_tsv(files[[1]], col_names = F, n_max = 1, na = default$missing_values, skip = input$data_spectra_header_row - 1, show_col_types = F))
         wavelength.n = melt(wavelength.c, measure.vars = 3:ncol(wavelength.c)) # could this be faster?
 
         if (input$data_spectra_method == "2-color") {
@@ -298,11 +356,11 @@ observeEvent(input$data_import_spectrometry_action, {
             wavelength.2 = which(input$data_spectra_range2[[1]] <= wavelength.n$value & wavelength.n$value <= input$data_spectra_range2[[2]])
 
             withProgress({
-                for (f in 1:nrow(files)) {
-                    incProgress(1/3 * (1 / nrow(files)), message = "importing data...", detail = files[f, ]$name)
-                    file.data = read_tsv(files[f, ]$datapath, col_names = F, na = default$missing_values, skip = input$data_spectra_data_row, show_col_types = F)
+                for (f in 1:length(files)) {
+                    incProgress(1/3 * (1 / length(files)), message = "importing data...", detail = basename(files[[f]]))
+                    file.data = read_tsv(files[[f]], col_names = F, na = default$missing_values, skip = input$data_spectra_data_row, show_col_types = F)
 
-                    incProgress(1/3 * (1 / nrow(files)), message = "processing data...", detail = files[f, ]$name)
+                    incProgress(1/3 * (1 / length(files)), message = "processing data...", detail = basename(files[[f]]))
                     color.1.data = file.data[, wavelength.1]
                     color.2.data = file.data[, wavelength.2]
 
@@ -318,26 +376,26 @@ observeEvent(input$data_import_spectrometry_action, {
                     }
 
                     # create raw dataset
-                    incProgress(1/3 * (1 / nrow(files)), message = "creating dataset...", detail = files[f, ]$name)
-                    data$raw[[files[f,]$name]] = data.table(color.1, color.2)
-                    data$raw[[files[f,]$name]][, `(time)` := (.I - 1) / input$data_spectra_frequency]
+                    incProgress(1/3 * (1 / length(files)), message = "creating dataset...", detail = basename(files[[f]]))
+                    data$raw[[basename(files[[f]])]] = data.table(color.1, color.2)
+                    data$raw[[basename(files[[f]])]][, `(time)` := (.I - 1) / input$data_spectra_frequency]
 
-                    data$models[[files[f,]$name]] = list()
+                    data$models[[basename(files[[f]])]] = list()
 
-                    data$analysis[[files[f,]$name]] = list()
+                    data$analysis[[basename(files[[f]])]] = list()
 
                     # create a new metadata entry named as the imported filename
                     data$meta = append(data$meta,
-                                       setNames(list(list(file = files[f,]$name,
-                                                          path = normalizePath(files[f,]$datapath),
+                                       setNames(list(list(file = basename(files[[f]]),
+                                                          path = normalizePath(files[[f]]),
                                                           time = "(time)")),
-                                                files[f,]$name))
+                                                basename(files[[f]])))
 
                     # de-trend if necessary
                     if (input$data_spectra_trend == "linear") {
                         incProgress(0, message = "applying linear correction...")
 
-                        .X = data$raw[[files[f,]$name]][, `(time)`]
+                        .X = data$raw[[basename(files[[f]])]][, `(time)`]
 
                         model.1 = lm(Y ~ X, data = data.frame(X = .X, Y = color.1), na.action = "na.omit")
                         model.2 = lm(Y ~ X, data = data.frame(X = .X, Y = color.2), na.action = "na.omit")
@@ -345,16 +403,16 @@ observeEvent(input$data_import_spectrometry_action, {
                         yhat.1 = predict(model.1, list(X = .X))
                         yhat.2 = predict(model.2, list(X = .X))
 
-                        data$raw[[files[f,]$name]][, color.1 := color.1 - yhat.1 + coefficients(model.1)[[1]]]
-                        data$raw[[files[f,]$name]][, color.2 := color.2 - yhat.2 + coefficients(model.2)[[1]]]
+                        data$raw[[basename(files[[f]])]][, color.1 := color.1 - yhat.1 + coefficients(model.1)[[1]]]
+                        data$raw[[basename(files[[f]])]][, color.2 := color.2 - yhat.2 + coefficients(model.2)[[1]]]
 
-                        data$models[[files[f,]$name]][["color.1"]] = list(type = "linear", m = coefficients(model.1)[[2]], b = coefficients(model.1)[[1]])
-                        data$models[[files[f,]$name]][["color.2"]] = list(type = "linear", m = coefficients(model.2)[[2]], b = coefficients(model.2)[[1]])
+                        data$models[[basename(files[[f]])]][["color.1"]] = list(type = "linear", m = coefficients(model.1)[[2]], b = coefficients(model.1)[[1]])
+                        data$models[[basename(files[[f]])]][["color.2"]] = list(type = "linear", m = coefficients(model.2)[[2]], b = coefficients(model.2)[[1]])
 
                     } else if (input$data_spectra_trend == "exponential") {
                         incProgress(0, message = "applying exponential correction...")
 
-                        .X = data$raw[[files[f,]$name]][, `(time)`]
+                        .X = data$raw[[basename(files[[f]])]][, `(time)`]
 
                         tryCatch({
                             model.1 = nlsr(Y ~ alpha * exp(beta * X) + theta, start = c(alpha = 100.0, beta = -0.01, theta = 1000.0), data = data.frame(X = .X, Y = color.1), na.action = "na.omit")
@@ -363,18 +421,18 @@ observeEvent(input$data_import_spectrometry_action, {
                             yhat.1 = predict(model.1, list(X = .X))
                             yhat.2 = predict(model.2, list(X = .X))
 
-                            data$raw[[files[f,]$name]][, color.1 := color.1 - yhat.1 + coefficients(model.1)[["theta"]]]
-                            data$raw[[files[f,]$name]][, color.2 := color.2 - yhat.2 + coefficients(model.2)[["theta"]]]
+                            data$raw[[basename(files[[f]])]][, color.1 := color.1 - yhat.1 + coefficients(model.1)[["theta"]]]
+                            data$raw[[basename(files[[f]])]][, color.2 := color.2 - yhat.2 + coefficients(model.2)[["theta"]]]
 
-                            data$models[[files[f,]$name]][["color.1"]] = list(type = "exponential", a = coefficients(model.1)[["alpha"]], b = coefficients(model.1)[["beta"]], c = coefficients(model.1)[["theta"]])
-                            data$models[[files[f,]$name]][["color.2"]] = list(type = "exponential", a = coefficients(model.2)[["alpha"]], b = coefficients(model.2)[["beta"]], c = coefficients(model.2)[["theta"]])
+                            data$models[[basename(files[[f]])]][["color.1"]] = list(type = "exponential", a = coefficients(model.1)[["alpha"]], b = coefficients(model.1)[["beta"]], c = coefficients(model.1)[["theta"]])
+                            data$models[[basename(files[[f]])]][["color.2"]] = list(type = "exponential", a = coefficients(model.2)[["alpha"]], b = coefficients(model.2)[["beta"]], c = coefficients(model.2)[["theta"]])
 
                         }, error = function(e) {
                             print(e)
-                            showNotification(sprintf("Couldn't find exponential parameters for %s, try manually specifying them under Transform -> de-trend.", files[f,]$name), duration = NULL)
+                            showNotification(sprintf("Couldn't find exponential parameters for %s, try manually specifying them under Transform -> de-trend.", basename(files[[f]])), duration = NULL)
                         }, warning = function(w) {
                             print(w)
-                            showNotification(sprintf("Couldn't find exponential parameters for %s, try manually specifying them under Transform -> de-trend.", files[f,]$name), duration = NULL)
+                            showNotification(sprintf("Couldn't find exponential parameters for %s, try manually specifying them under Transform -> de-trend.", basename(files[[f]])), duration = NULL)
                         })
 
                     } else {
@@ -383,9 +441,9 @@ observeEvent(input$data_import_spectrometry_action, {
 
                     # create a ratio of the two colors
                     if (input$data_spectra_ratio == "color 2 / color 1") {
-                        data$raw[[files[f,]$name]][, ratio := color.2/color.1]
+                        data$raw[[basename(files[[f]])]][, ratio := color.2/color.1]
                     } else if (input$data_spectra_ratio == "color 1 / color 2") {
-                        data$raw[[files[f,]$name]][, ratio := color.1/color.2]
+                        data$raw[[basename(files[[f]])]][, ratio := color.1/color.2]
                     } else {
 
                     }
@@ -396,9 +454,9 @@ observeEvent(input$data_import_spectrometry_action, {
         } else if (input$data_spectra_method == "linear") {
             withProgress({
 
-                for (f in 1:nrow(files)) {
-                    incProgress(0, message = files[f, ]$name, detail = "importing dataset...")
-                    file.data = read_tsv(files[f, ]$datapath, col_names = F, na = default$missing_values, skip = input$data_spectra_data_row, show_col_types = F)
+                for (f in 1:length(files)) {
+                    incProgress(0, message = basename(files[[f]]), detail = "importing dataset...")
+                    file.data = read_tsv(files[[f]], col_names = F, na = default$missing_values, skip = input$data_spectra_data_row, show_col_types = F)
 
                     ref.data = data.table()
                     pf = y ~ NULL
@@ -422,28 +480,30 @@ observeEvent(input$data_import_spectrometry_action, {
 
                     .start = Sys.time()
 
+                    # browser()
+
                     .ret = apply(file.data, 1, \(row, reference, lm.formula) {
                         .fit = lm(lm.formula, cbind(data.frame(y = as.numeric(row[3:length(row)])), reference))
                         .coef = coefficients(.fit)
                         append(.coef, c(`(r-squared)` = summary(.fit)$r.squared))
                     }, reference = ref.data, lm.formula = pf)
 
-                    printf("%s took %0.3f seconds\n", files[f,]$name, Sys.time() - .start)
+                    printf("%s took %0.3f seconds\n", basename(files[[f]]), Sys.time() - .start)
 
-                    data$raw[[files[f,]$name]] = as.data.table(t(.ret))
+                    data$raw[[basename(files[[f]])]] = as.data.table(t(.ret))
 
-                    data$raw[[files[f,]$name]][, `(time)` := (.I - 1) / input$data_spectra_frequency]
+                    data$raw[[basename(files[[f]])]][, `(time)` := (.I - 1) / input$data_spectra_frequency]
 
-                    data$analysis[[files[f,]$name]] = list()
+                    data$analysis[[basename(files[[f]])]] = list()
 
                     # create a new metadata entry named as the imported filename
                     data$meta = append(data$meta,
-                                       setNames(list(list(file = files[f,]$name,
-                                                          path = normalizePath(files[f,]$datapath),
+                                       setNames(list(list(file = basename(files[[f]]),
+                                                          path = normalizePath(files[[f]]),
                                                           time = "(time)")),
-                                                files[f,]$name))
+                                                basename(files[[f]])))
 
-                    incProgress(1 / nrow(files))
+                    incProgress(1 / length(files))
                 }
             }, value = 0)
         }
