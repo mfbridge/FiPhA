@@ -168,10 +168,10 @@ observeEvent(c(input$data_baseline_var_open, input$data_baseline_var, input$data
                 lls=list()
                 for (nn in names(plot.data$models[[n]])) {
                     if (!(nn %in% c("converged", "type"))) {
-                        lls = append(lls, sprintf("<span style='color: #a0a0a0; display: inline;'>%3s=</span>%8.3g", nn, plot.data$models[[n]][nn]))
+                        lls = append(lls, sprintf("<span style='color: #b0b0b0; display: inline;'>%3s=</span>%9.3g", nn, plot.data$models[[n]][nn]))
                     }
                 }
-                string = append(string, sprintf("<span style='color: #20a020; text-align: left; white-space: pre;'><b>%s</b></span><span style='white-space: pre;'>%s</span><br/>", str_pad(n, nlen), paste0(lls, collapse = "    ")))
+                string = append(string, sprintf("<span style='color: #20a020; text-align: left; white-space: pre;'><b>%s</b></span><span style='white-space: pre;'>%s</span><br/>", str_pad(n, nlen), paste0(lls, collapse = "  ")))
             } else {
                 string = append(string, sprintf("<span style='color: #c02020; text-align: left;'><span style='white-space: pre;'><b>%s</b></span> failed to converge.</span><br/>", str_pad(n, nlen)))
             }

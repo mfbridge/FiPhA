@@ -271,7 +271,7 @@ output$data_plot = renderPlotly({
         pal1index = 1
         pal2index = 1
 
-        is.binary = lapply(input$data_plot_y, \(c) length(unique(.data[, get(c)])) == 2)
+        is.binary = lapply(input$data_plot_y, \(c) (length(unique(.data[, get(c)])) == 2) | (length(unique(.data[, get(c)])) == 3 & sum(is.na(unique(.data[, get(c)])) == 1)))
 
         if (input$data_scale_y_y2) {
             for (.yi in 1:length(input$data_plot_y)) {
@@ -319,9 +319,10 @@ output$data_plot = renderPlotly({
         )
         }
 
+        wx = ifelse("y2" %in% input$data_plot_options, 0.075, 0)
         #if ("x" %in% input$elements) {
             figure = figure |> layout(
-                xaxis = list(tickmode = "auto", nticks = 15, domain = c(0, 1.0 - 0.075 * (length(input$data_plot_y)-sum(unlist(is.binary))-1)),
+                xaxis = list(tickmode = "auto", nticks = 15, domain = c(0, 1.0 - wx * (length(input$data_plot_y)-sum(unlist(is.binary))-1)),
                     tickfont = list(size = input$data_font_size),
                     tickcolor = "#000000",
                     title = ifelse(input$data_plot_x == "(time)", "<b>Time, sec</b>", sprintf("<b>%s</b>",input$data_plot_x)),
@@ -378,7 +379,7 @@ output$data_plot = renderPlotly({
                             marker = list(color = palette_index(input$pal2, pal2index, viridis.max = binary.count), symbol = "square"),
                             name = input$data_plot_y[[y2i]], inherit = F)
                     shapes = append(shapes, binary2shapes(.preview$dt, input$data_plot_y[[y2i]], .time,
-                                palette_index(input$pal2, pal2index, viridis.max = binary.count), input$pal2alpha))
+                                palette_index(input$pal2, pal2index, viridis.max = binary.count), input$data_plot_area_opacity))
                     pal2index = pal2index + 1
 
 
@@ -400,6 +401,9 @@ output$data_plot = renderPlotly({
 
                     # are all of these necessary?
                     # TODO: tickmode = "sync" is only in plotly.js versions 2.18+, but the current plotly CRAN package still uses 2.11
+                    wx = ifelse("y2" %in% input$data_plot_options, 0.075, 0)
+
+
                     args = setNames(
                         list(
                             figure,
@@ -410,8 +414,8 @@ output$data_plot = renderPlotly({
                                 title = sprintf("<b>%s</b>", input$data_plot_y[[y2i]]), automargin = T,
                                 titlefont = list(size = input$data_font_size),
                                 showgrid = "y2_grid" %in% input$data_plot_options,
-                                position = 1.0 - 0.075*(pal1index-1), anchor = "free"
-                                #visible = "y2" %in% input$elements
+                                position = 1.0 - wx*(pal1index-1), anchor = "free",
+                                visible = "y2" %in% input$data_plot_options
                             ) # scaleanchor = "y" toggle?
                         ),
                         c("p", paste0("yaxis", idx)))
@@ -421,7 +425,15 @@ output$data_plot = renderPlotly({
                         View(args)
                     }
 
-                    figure = do.call(layout, args)
+                    if ("ignore_binary_axes" %in% input$data_plot_options) {
+                        if (!is.binary[[idx]]) {
+                            figure = do.call(layout, args)
+                        } else {
+                            #figure = do.call(layout, args)
+                        }
+                    } else {
+                        figure = do.call(layout, args)
+                    }
                     pal1index = pal1index + 1
                 }
 
@@ -430,13 +442,15 @@ output$data_plot = renderPlotly({
             }
         }
 
-        figure = figure |> layout(shapes = shapes)
+        figure = figure |> layout(shapes = shapes) |> layout(font = list(family = "Arial"))
 
         # convert to webgl element if necessary
         # faster drawing for large number of points, but plotly still complains about not rendering in RStudio even though it does
         #if (state$pref("plot_webgl")) {
             figure = figure |> toWebGL()
         #}
+
+            #browser()
 
         figure = figure |> plotly_build() %>% event_register("plotly_relayout")
 
