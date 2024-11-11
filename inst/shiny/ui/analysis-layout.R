@@ -92,7 +92,7 @@ analysis.ui = navbarMenu("Analysis",
                             "Model",
                             div(class = "text-end",
                                 dropMenu(actionLink("summary_model_menu", label = NULL, icon = icon("gears"), class = "text-dark"), padding = "0px", theme="light-border", placement = "bottom",
-                                    virtualSelectInput("summary_function", "Summary Function", choices = c("mean", "median", "auc"), selected = "mean"),
+                                    virtualSelectInput("summary_function", "Summary Function", choices = c("mean", "median", "auc", "max", "min"), selected = "mean"),
                                     virtualSelectInput("summary_model_ss", "ANOVA Sums of Squares", selected = "III", choices = c("Type I"="I", "Type II"="II", "Type III" ="III"), width = "100%"),
                                     tags$br(),
                                     div(style = "text-align: left; font-size: 0.75rem;",uiOutput("summary_ss_info")),
@@ -126,16 +126,21 @@ analysis.ui = navbarMenu("Analysis",
                             div(class = "text-end",
                                 dropMenu(actionLink("test", label = NULL, icon = icon("gears"), class = "text-dark"), padding = "0px", theme="light-border", placement = "bottom-end",
                                     div(style = "text-align: left;",
-                                        checkboxGroupInput("summary_plot_options", label = "Options", choices = c("dodged groupings"="dodgex", "horizontal facets"="hzfacet", "horizontal legend"="hzlegend", "visible color legend"="legend"), selected = c("hzfacet", "hzlegend", "dodgex", "legend")),
+                                        checkboxGroupInput("summary_plot_options", label = "Options", choices = c(
+                                            "dodged groupings"="dodgex",
+                                            "horizontal facets"="hzfacet",
+                                            "horizontal legend"="hzlegend",
+                                            "visible color legend"="legend"), selected = c("hzfacet", "hzlegend", "dodgex", "legend")),
                                     virtualSelectInput("summary_plot_palette", "Palette", choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo"), selected = "turbo", multiple = F, placeholder = "Palette", optionHeight = "24rem", width = "100%")
                                     )
                                 )
                             )
                         )
                     ),
-                    layout_columns(col_widths = c(6, 6),
+                    layout_columns(col_widths = c(4, 4, 4),
                         virtualSelectInput("summary_plot_color", NULL, choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), multiple = T, maxValues = 1, placeholder = "color", optionHeight = "24rem", width = "100%"),
-                        virtualSelectInput("summary_plot_facet", NULL, choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), multiple = T, maxValues = 1, placeholder = "facet", optionHeight = "24rem", width = "100%")
+                        virtualSelectInput("summary_plot_facet", NULL, choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), multiple = T, maxValues = 1, placeholder = "facet", optionHeight = "24rem", width = "100%"),
+                        virtualSelectInput("summary_group_variable", NULL, choices = c("Dataset", "Series", "Event #", "Interval", "Custom"), multiple = T, maxValues = 1, placeholder = "group", optionHeight = "24rem", width = "100%"),
                     ),
                     plotlyOutput("summary_boxplot", fill = T)
                 )
