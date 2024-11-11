@@ -164,6 +164,8 @@ output$summary_boxplot = renderPlotly({
     if (input$summary_function == "mean") fun = mean
     else if (input$summary_function == "median") fun = median
     else if (input$summary_function == "auc") fun = auc
+    else if (input$summary_function == "max") fun = max
+    else if (input$summary_function == "min") fun = min
 
     tag.set = c()
     for (sel in input$summary_series) {
@@ -212,6 +214,10 @@ output$summary_boxplot = renderPlotly({
                         values = rbindlist(list(values, data.table(.is, value = median(.ss$Y, na.rm = T))))
                     } else if (input$summary_function == "auc") {
                         values = rbindlist(list(values, data.table(.is, value = auc(.ss$Y, .ss$X, na.rm = T))))
+                    } else if (input$summary_function == "max") {
+                        values = rbindlist(list(values, data.table(.is, value = max(.ss$Y, na.rm = T))))
+                    } else if (input$summary_function == "min") {
+                        values = rbindlist(list(values, data.table(.is, value = min(.ss$Y, na.rm = T))))
                     }
                 }
             }
@@ -388,6 +394,12 @@ output$summary_boxplot = renderPlotly({
                     .values = values
                 }
 
+                #browser()
+
+                if (length(input$summary_group_variable) > 0) {
+                    .values = .values[, .(value = mean(value), n = .N), by = c(input$summary_group_variable, X)]
+                }
+
                 .plot = plot_ly(.values)
 
                 # boxplot trace options
@@ -401,9 +413,14 @@ output$summary_boxplot = renderPlotly({
                     boxmean = T,
                     boxpoints = "all",
                     pointpos = 0,
-                    marker = list(size = 5, symbol = 'square', line = list(width = 1, color = '#00000080')),
-                    text = .values[, sprintf("<b>Dataset</b>: %s\n<b>Series</b>: %s\n<b>Event</b>: %d\n<b>Interval</b>: %s", Dataset, Series, `Event #`, Interval)]
+                    marker = list(size = 5, symbol = 'square', line = list(width = 1, color = '#00000080'))
                 )
+
+                if (length(input$summary_group_variable) > 0) { #("groupmeans" %in% input$summary_plot_options) {
+                    trace.opts$text = .values[, sprintf("<b>Group</b>: %s", get(input$summary_group_variable))]
+                } else {
+                    trace.opts$text = .values[, sprintf("<b>Dataset</b>: %s\n<b>Series</b>: %s\n<b>Event</b>: %d\n<b>Interval</b>: %s", Dataset, Series, `Event #`, Interval)]
+                }
 
                 if (!is.na(facets[[f]])) {
                     trace.opts$name = facets[[f]]
@@ -444,6 +461,8 @@ output$summary_boxplot = renderPlotly({
                     if (input$summary_function == "mean") layout.opts$yaxis$title = "Mean"
                     else if (input$summary_function == "median") layout.opts$yaxis$title = "Median"
                     else if (input$summary_function == "auc") layout.opts$yaxis$title = "AUC"
+                    else if (input$summary_function == "max") layout.opts$yaxis$title = "Maximum"
+                    else if (input$summary_function == "min") layout.opts$yaxis$title = "Minimum"
                 } else {
                     layout.opts$xaxis$title = ""
                     layout.opts$yaxis$title = ""
@@ -499,6 +518,8 @@ output$summary_boxplot = renderPlotly({
             if (input$summary_function == "mean") .title = "Mean"
             else if (input$summary_function == "median") .title = "Median"
             else if (input$summary_function == "auc") .title = "AUC"
+            else if (input$summary_function == "max") .title = "Maximum"
+            else if (input$summary_function == "min") .title = "Minimum"
 
             .final = .final %>%
                 layout(margin = list(l = 100, b = 50)) %>%
