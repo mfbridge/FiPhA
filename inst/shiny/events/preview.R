@@ -6,6 +6,8 @@ output$events_preview = renderPlotly({
 
     interval.names = c()
     dataset = data.table()
+    minmax.sdt = data.table()
+
     for (s in input$events_series) {
         .s = data$series[[input$events_dataset]][[s]]
         interval.names = append(interval.names, .s$intervals$name)
@@ -13,15 +15,74 @@ output$events_preview = renderPlotly({
             .ed = data$events[[input$events_dataset]][[s]][[e]]
             if (nrow(.ed) > 0) {
                 if (input$events_series_x == "event time") {
-                    dataset = rbindlist(list(dataset, .ed[, .(e = e, s = s, i = `(interval)`, X = `(event time)`, Y = get(.s$responses[[1]]))]))
+                    dataset = rbindlist(list(dataset, .ed[, .(e = e, s = s, i = `(interval)`, X = `(event time)`, Xe = `(event time)`, Y = get(.s$responses[[1]]))]))
                 } else {
-                    dataset = rbindlist(list(dataset, .ed[, .(e = e, s = s, i = `(interval)`, X = `(interval time)`, Y = get(.s$responses[[1]]))]))
+                    dataset = rbindlist(list(dataset, .ed[, .(e = e, s = s, i = `(interval)`, X = `(interval time)`, Xe = `(event time)`, Y = get(.s$responses[[1]]))]))
                 }
             }
+
+
         }
     }
     dataset[, Xstr := sprintf("%0.3f", X)]
     dataset$i.f = factor(dataset$i, levels = unique(interval.names), ordered = T)
+
+    rfdt = data.table()
+
+    if (input$events_risefall) {
+        for (es in input$events_series) {
+            .dt = dataset[s == es, ]
+            #browser()
+            try({
+
+            f = lm(Y ~ ns(Xe, df = input$events_risefall_nsdf), .dt)
+            XX = seq(min(.dt$Xe), max(.dt$Xe), .dt$Xe[2]-.dt$Xe[1])
+            Ys = predict(f, data.table(Xe = XX))
+            peaks = gsignal::findpeaks(Ys, DoubleSided = T, MinPeakHeight = input$events_risefall_peakheight, MinPeakWidth = input$events_risefall_peakwidth)
+            #if (length(peaks$loc) > 6) {
+                maxpk = max(Ys) # one of peaks obviously should be the global max
+                maxi = peaks$loc[peaks$pks==maxpk]
+                maxpeaki = which(peaks$pks==maxpk)
+                maxpk.x = XX[maxi]
+
+                # find which local minima are next to our global max
+                left.minima = peaks$loc[1]
+                right.minima = peaks$loc[length(peaks$loc)]
+                for (ii in (maxpeaki+1):(length(peaks$pks)-1)) {
+                    # find first local maxima
+                    if (peaks$pks[ii-1] > peaks$pks[ii] & peaks$pks[ii] < peaks$pks[ii+1]) {
+                        right.minima = peaks$loc[ii]
+                        break
+                    }
+                }
+                for (ii in (maxpeaki-1):2) {
+                    if (peaks$pks[ii-1] > peaks$pks[ii] & peaks$pks[ii] < peaks$pks[ii+1]) {
+                        left.minima = peaks$loc[ii]
+                        break
+                    }
+                }
+                #print(peaks)
+                rise.est = maxpk.x - XX[left.minima]
+                fall.est = XX[right.minima] - maxpk.x
+
+                rfdt = rbindlist(list(rfdt, data.table(s = es, x = XX, y = Ys)))
+
+                minmax.sdt = rbindlist(list(minmax.sdt, data.table(
+                    `Series` = es,
+                    `Left Minima` = XX[left.minima],
+                    `Peak` = maxpk.x,
+                    `Right Minima` = XX[right.minima],
+                    `Rise Time` = rise.est,
+                    `Fall Time` = fall.est
+                )), fill = T)
+
+            })
+            #} else {
+            #    showNotification("Could not find any peaks with specified parameters.", type = "error")
+            #}
+        }
+
+    }
 
     if (input$events_meansd) {
         if (input$events_series_x == "event time") {
@@ -33,8 +94,13 @@ output$events_preview = renderPlotly({
         mean.sd[, upper := mu + input$events_meansd_n * sig]
         mean.sd = mean.sd[order(x),]
         mean.sd = mean.sd[!is.na(mu)&!is.na(upper)&!is.na(lower),]
+
+        #browser()
     }
 
+    output$events_minmax_summary = renderTable({
+        minmax.sdt
+    })
 
     ggplotly({
         .gg = ggplot(dataset, aes(x = X, y = Y, color = i, group = e)) +
@@ -44,6 +110,7 @@ output$events_preview = renderPlotly({
             labs(x = input$events_title_xaxis, y = input$events_title_yaxis) +
             theme(panel.spacing = unit(0, "cm")) +
             coord_cartesian(expand = F)
+
 
         if (input$events_series_x == "event time") {
             .gg = .gg + facet_grid(s ~ .)
@@ -73,9 +140,15 @@ output$events_preview = renderPlotly({
             .gg = .gg + scale_color_viridis_d(begin = 0.1, end = 0.9)
         }
 
+        if (input$events_risefall) {
+            if (input$events_series_x == "event time") {
+                .gg = .gg + geom_line(aes(x = x, y = y, group = s), rfdt, linewidth = 0.75, alpha = 0.5, inherit.aes = F)
+                .gg = .gg + geom_vline(aes(xintercept = x, group = s), data = data.table(x = c(minmax.sdt$`Left Minima`, minmax.sdt$`Peak`, minmax.sdt$`Right Minima`), s = minmax.sdt$Series), linetype = "dotted", linewidth = 0.5)
+            }
+        }
+
         if (input$events_meansd) {
             # draw the mean line last
-
             if (input$events_series_x == "event time") {
                 .gg = .gg + geom_line(aes(x = x, y = mu), data = mean.sd, color = input$events_meansd_line, size = input$events_meansd_size, inherit.aes = F)
             } else {
