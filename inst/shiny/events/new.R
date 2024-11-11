@@ -71,13 +71,18 @@ evaluate_events = function() {
             } else {
                 # multiple windows
                 for (i in 1:nrow(wins)) {
+                    browser()
                     if (wins[i, Start] != "" & wins[i, End] != "") {
                         win.start.event = wins[i, Start]
                         win.end.event = wins[i, End]
 
-                        win.start.time = cba.temp$event.data[type == win.start.event, min(start)]
-                        win.end.time = cba.temp$event.data[type == win.end.event, max(end)]
-
+                        if (!is.na(as.numeric(wins[i, t0])) & !is.na(as.numeric(wins[i, tf]))) {
+                            win.start.time = cba.temp$event.data[type == win.start.event, min(start)] + as.numeric(wins[i, t0])
+                            win.end.time = cba.temp$event.data[type == win.start.event, min(start)] + as.numeric(wins[i, tf])
+                        } else {
+                            win.start.time = cba.temp$event.data[type == win.start.event, min(start)]
+                            win.end.time = cba.temp$event.data[type == win.end.event, max(end)]
+                        }
                         for (etype in input$events_list_cba_types) {
                             event.times = cba.temp$event.data[type == etype & (win.start.time < start) & (end < win.end.time),]
 
@@ -293,7 +298,11 @@ ui.tags = tagList(
                 excelOutput("events_fixed_list", height = "auto")
             )),
             hidden(div(id = "events_list_cba_", #style = "overflow-y: scroll; max-height: 20rem; min-height: 20rem;",
-                numericInput("events_list_cba_framerate", label = "Framerate", value = 25, min = 1),
+                fluidRow(
+                    column(6, numericInput("events_list_cba_framerate", label = "Framerate", value = 25, min = 1)),
+                    column(6, numericInput("events_list_cba_start", label = "Initial Timestamp", value = 1 / 25))
+                ),
+
                 tags$label("Event file (*.txt)"), tags$br(), actionButton("events_list_cba_browse", label = "Browse..."),
                 tags$br(),
                 tags$label("Windows (optional)"), tags$br(), excelOutput("events_list_cba_windows", height = "auto"), tags$br(),
@@ -421,8 +430,8 @@ observeEvent(input$events_new_finish, {
 
 output$events_list_cba_windows = renderExcel(
     excelTable(
-        data = data.table(start = character(1), end = character(1)),
-        columns = data.frame(title = c("Start", "End"), type = c("dropdown", "dropdown"), width = c(600, 600), source = I(list(c("one", "two"), c("one", "two")))),
+        data = data.table(start = character(1), end = character(1), t0 = NA, tf = NA),
+        columns = data.frame(title = c("Start", "End", "t0", "tf"), type = c("dropdown", "dropdown", "number", "number"), width = c(600, 600, 200, 200), source = I(list(c("one", "two"), c("one", "two"), NA, NA))),
         allowInsertColumn = F, allowDeleteColumn = F, allowRenameColumn = F, rowDrag = F
     )
 )
@@ -537,7 +546,7 @@ observeEvent(input$events_list_cba_browse, {
         # read event data
         table.header = read_lines(f, skip = 3 + i, skip_empty_rows = F, n_max = 1)
         assert_that(table.header == "S1: start    end     type")
-        event.data =  as.data.table(read_table(f, skip = 3 + i + 2, col_names = c("start", "end", "type"), col_types = "nnc"))[, `:=`(start = start / input$events_list_cba_framerate, end = end / input$events_list_cba_framerate)]
+        event.data =  as.data.table(read_table(f, skip = 3 + i + 2, col_names = c("start", "end", "type"), col_types = "nnc"))[, `:=`(start = start / input$events_list_cba_framerate + input$events_list_cba_start, end = end / input$events_list_cba_framerate + input$events_list_cba_start)]
         #View(event.data)
 
         cba.temp$event.data = event.data
@@ -547,8 +556,8 @@ observeEvent(input$events_list_cba_browse, {
 
         output$events_list_cba_windows = renderExcel(
             excelTable(
-                data = data.table(start = character(1), end = character(1)),
-                columns = data.frame(title = c("Start", "End"), type = c("dropdown", "dropdown"), width = c(600, 600), source = I(list(type.vals, type.vals))),
+                data = data.table(start = character(1), end = character(1), t0 = NA, tf = NA),
+                columns = data.frame(title = c("Start", "End", "t0", "tf"), type = c("dropdown", "dropdown", "number", "number"), width = c(600, 600, 200, 200), source = I(list(type.vals, type.vals, NA, NA))),
                 allowInsertColumn = F, allowDeleteColumn = F, allowRenameColumn = F, rowDrag = T
             )
         )
