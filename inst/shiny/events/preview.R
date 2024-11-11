@@ -38,7 +38,7 @@ output$events_preview = renderPlotly({
             f = lm(Y ~ ns(Xe, df = input$events_risefall_nsdf), .dt)
             XX = seq(min(.dt$Xe), max(.dt$Xe), .dt$Xe[2]-.dt$Xe[1])
             Ys = predict(f, data.table(Xe = XX))
-            peaks = gsignal::findpeaks(Ys, DoubleSided = T, MinPeakHeight = input$events_risefall_peakheight, MinPeakWidth = input$events_risefall_peakwidth)
+            peaks = gsignal::findpeaks(Ys, DoubleSided = T, MinPeakHeight = input$events_risefall_peakheight, MinPeakDistance = input$events_risefall_peakdist, MinPeakWidth = input$events_risefall_peakwidth)
             #if (length(peaks$loc) > 6) {
                 maxpk = max(Ys) # one of peaks obviously should be the global max
                 maxi = peaks$loc[peaks$pks==maxpk]

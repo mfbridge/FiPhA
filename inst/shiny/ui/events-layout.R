@@ -20,12 +20,13 @@ events.ui = nav("Events",
                 column(6, pickerInput("events_series", NULL, multiple = T, choices = c(), choicesOpt = list())),
                 column(2, pickerInput("events_series_x", NULL, multiple = F, choices = c("event time", "interval time"), selected = "event time")),
                 #column(5, pickerInput("events_preview_y", NULL, c("One", "two", "33"), width = "100%", multiple = T, options = list(`max-options`=2, title="Y Axis Variable(s)"))),
-                column(2, dropdown(size = "xs", status = "primary", icon = icon("chart-area"), right = T,
+                column(2, dropdown(size = "xs", status = "primary", icon = icon("chart-area"), right = T, width = "30rem",
                     checkboxInput("events_risefall", "Estimate rise & fall times"),
                     fluidRow(
-                        column(4, numericInput("events_risefall_nsdf", label = "Spline df", value = 30, min = 1, step = 1, width = "100%")),
-                        column(4, numericInput("events_risefall_peakheight", label = "Min Peak Height", value = 0.01, width = "100%")),
-                        column(4, numericInput("events_risefall_peakwidth", label = "Min Peak Width", value = 1, width = "100%"))
+                        column(3, numericInput("events_risefall_nsdf", label = "Spline df", value = 30, min = 1, step = 1, width = "100%")),
+                        column(3, numericInput("events_risefall_peakheight", label = "Min Height", value = 0.01, width = "100%")),
+                        column(3, numericInput("events_risefall_peakdist", label = "Min Distance", value = 1, width = "100%")),
+                        column(3, numericInput("events_risefall_peakwidth", label = "Min Width", value = 1, width = "100%"))
                     )
                 )),
                 column(2, dropdown(size = "xs", status = "primary", icon = icon("cogs"), right = T,
