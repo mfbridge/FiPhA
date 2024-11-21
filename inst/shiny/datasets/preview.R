@@ -490,7 +490,7 @@ nth_pnt_aggregator2 <- R6::R6Class(
     #' Arguments pass to the constructor of \code{aggregator} object.
     initialize = function(
       ...,
-      interleave_gaps, coef_gap, NA_position, accepted_datatype
+      interleave_gaps, coef_gap, NA_position
     ) {
       args <- c(as.list(environment()), list(...))
       do.call(super$initialize, args)
