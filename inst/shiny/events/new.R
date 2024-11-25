@@ -71,7 +71,7 @@ evaluate_events = function() {
             } else {
                 # multiple windows
                 for (i in 1:nrow(wins)) {
-                    browser()
+                    #browser()
                     if (wins[i, Start] != "" & wins[i, End] != "") {
                         win.start.event = wins[i, Start]
                         win.end.event = wins[i, End]
