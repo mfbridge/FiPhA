@@ -319,7 +319,7 @@ output$data_plot = renderPlotly({
         )
         }
 
-        wx = ifelse("y2" %in% input$data_plot_options, 0.075, 0)
+        wx = ifelse("y2" %in% input$data_plot_options, input$data_plot_y2space, 0)
         #if ("x" %in% input$elements) {
             figure = figure |> layout(
                 xaxis = list(tickmode = "auto", nticks = 15, domain = c(0, 1.0 - wx * (length(input$data_plot_y)-sum(unlist(is.binary))-1)),
@@ -401,7 +401,7 @@ output$data_plot = renderPlotly({
 
                     # are all of these necessary?
                     # TODO: tickmode = "sync" is only in plotly.js versions 2.18+, but the current plotly CRAN package still uses 2.11
-                    wx = ifelse("y2" %in% input$data_plot_options, 0.075, 0)
+                    wx = ifelse("y2" %in% input$data_plot_options, input$data_plot_y2space, 0)
 
 
                     args = setNames(

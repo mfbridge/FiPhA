@@ -67,6 +67,7 @@ data.ui = nav("Datasets",
                                     esquisse::palettePicker("pal2", "Area Palette", choices = palettes, selected = "mako_reverse", textColor = "#e0e0e0", pickerOpts = list(size=10), plainColor = T),
                                     numericInput("data_plot_area_opacity", label = "Area Opacity", value = 0.8, min = 0, max = 1, step = 0.1),
                                     numericInput("data_plot_line_width", label = "Line Width", value = 0.75, min = 0, step = 0.05),
+                                    numericInput("data_plot_y2space", label = "Secondary Axis Spacing", value = 0.075, step = 0.00625),
                                     prettyCheckboxGroup("data_plot_options", label = "Options",
                                         choices = list(
                                             "Use dataset name as plot title"="title",
