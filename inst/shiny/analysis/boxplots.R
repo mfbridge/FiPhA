@@ -230,14 +230,26 @@ output$summary_boxplot = renderPlotly({
     output$summary_download_csv = downloadHandler(
         filename = sprintf("%s interval summaries.csv", input$summary_function),
         content = \(file) {
-            write_csv(values, file, na = "")
+            if (length(input$summary_plot_color)==1) {
+                subset = names(input$summary_plot_traces[input$summary_plot_traces %in% c(T)])
+                sub.vals = values[get(input$summary_plot_color) %in% subset,]
+                write_csv(sub.vals, file, na = "")
+            } else {
+                write_csv(values, file, na = "")
+            }
         }
     )
 
     output$summary_download_xlsx = downloadHandler(
         filename = sprintf("%s interval summaries.xlsx", input$summary_function),
         content = \(file) {
-            write_xlsx(values, file, col_names = T, format_headers = T)
+            if (length(input$summary_plot_color)==1) {
+                subset = names(input$summary_plot_traces[input$summary_plot_traces %in% c(T)])
+                sub.vals = values[get(input$summary_plot_color) %in% subset,]
+                write_xlsx(sub.vals, file, col_names = T, format_headers = T)
+            } else {
+                write_xlsx(values, file, col_names = T, format_headers = T)
+            }
         }
     )
 
@@ -527,7 +539,16 @@ output$summary_boxplot = renderPlotly({
                 add_annotations(text = X, xref = "paper", yref = "paper", x = 0.5, y = -0.15, xanchor = "center", yanchor = "top", showarrow = F, font = list(size = 14))
         }
 
-        .final
+        .final |> onRender("function(el, x){
+            el.on('plotly_restyle', function(evtData) {
+              var out = {};
+              function getTraceVisibility(trace, traceindex) {
+                out[trace.name] = trace.visible;
+              }
+              el._fullData.forEach(getTraceVisibility);
+              Shiny.setInputValue('summary_plot_traces', out);
+            });
+          }")
     }
  })
 
