@@ -1,6 +1,6 @@
 
 
-shinyFileChoose(input, "data_unaligned_file", root=root.dirs, filetypes=c("csv", "xlsx"))
+#shinyFileChoose(input, "data_unaligned_file", root=root.dirs, filetypes=c("csv", "xlsx"))
 
 observeEvent(input$data_unaligned_time_unit, {
     if (input$data_unaligned_time_unit == "freq") {
@@ -16,10 +16,14 @@ observeEvent(input$data_unaligned_time_unit, {
 
 
 observeEvent(c(input$data_unaligned_file, input$data_unaligned_header_row, input$data_unaligned_data_row), {
-    if (is.integer(input$data_unaligned_file)) {
+    req(!is.null(input$data_unaligned_file))
+    #print(input$data_unaligned_file)
+
+    #if (is.integer(input$data_unaligned_file)) {
+    if (nrow(input$data_unaligned_file) > 1) {
         # nothing selected
     } else {
-        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_unaligned_file)
+        fileinfo = input$data_unaligned_file #parseFilePaths(root=root.dirs, selection = input$data_unaligned_file)
         output$data_unaligned_filename = renderText({ sprintf("%s", paste0(fileinfo$name, collapse=", ")) })
 
         tryCatch({
@@ -27,9 +31,7 @@ observeEvent(c(input$data_unaligned_file, input$data_unaligned_header_row, input
                 for (f in 1:nrow(fileinfo)) {
                     # import each selected file
 
-                    ext = regmatches(fileinfo[f,]$name, regexpr("([a-zA-Z0-9]+)$", fileinfo[f,]$name))
-
-                    if (tolower(ext) == "csv") {
+                    if (endsWith(tolower(fileinfo[f,]$name), "csv")) {
                         # read header separately
                         header = as.character(read_csv(fileinfo[f,]$datapath,
                                                        col_names = F,
@@ -38,7 +40,7 @@ observeEvent(c(input$data_unaligned_file, input$data_unaligned_header_row, input
                                                        skip = input$data_unaligned_header_row - 1,
                                                        show_col_types = F))
 
-                    } else if (tolower(ext) == "xlsx") {
+                    } else if (endsWith(tolower(fileinfo[f,]$name), "xlsx")) {
                         # read header
                         header = as.character(read_xlsx(fileinfo[f,]$datapath,
                                                         na = default$missing_values,
@@ -63,7 +65,7 @@ observeEvent(input$data_unaligned_finish, {
 if (is.integer(input$data_unaligned_file)) {
         # nothing selected
     } else {
-        fileinfo = parseFilePaths(root=root.dirs, selection = input$data_unaligned_file)
+        fileinfo = input$data_unaligned_file # parseFilePaths(root=root.dirs, selection = input$data_unaligned_file)
         output$data_unaligned_filename = renderText({ sprintf("%s", paste0(fileinfo$name, collapse=", ")) })
 
         tryCatch({
@@ -74,9 +76,7 @@ if (is.integer(input$data_unaligned_file)) {
                     Bi.list = c()
                     # import selected file
 
-                    ext = regmatches(fileinfo[f,]$name, regexpr("([a-zA-Z0-9]+)$", fileinfo[f,]$name))
-
-                    if (tolower(ext) == "csv") {
+                    if (endsWith(tolower(fileinfo[f,]$name), "csv")) {
                         # read header separately
                         header = as.character(read_csv(fileinfo[f,]$datapath,
                                                        col_names = F,
@@ -87,7 +87,7 @@ if (is.integer(input$data_unaligned_file)) {
 
                         this.raw = as.data.table(read_csv(fileinfo[f,]$datapath, col_names = header, na = default$missing_values, skip = input$data_unaligned_data_row - 1, show_col_types = F))
 
-                    } else if (tolower(ext) == "xlsx") {
+                    } else if (endsWith(tolower(fileinfo[f,]$name), "xlsx")) {
                         # read header
                         header = as.character(read_xlsx(fileinfo[f,]$datapath,
                                                         na = default$missing_values,
@@ -143,11 +143,7 @@ if (is.integer(input$data_unaligned_file)) {
                     data$raw[[input$data_unaligned_dataset]] = cbind(data$raw[[input$data_unaligned_dataset]], B[r, input$data_unaligned_vars, with = F])
 
                     # update some things that are currently showing lists of variables
-                    variables = names(data$raw[[input$data_dataset]])
-                    updatePickerInput(session, "data_plot_x", choices = variables, selected = input$data_plot_x)
-                    updatePickerInput(session, "data_plot_y", choices = variables, selected = input$data_plot_y)
-                    updatePickerInput(session, "data_time", choices = variables, selected = input$data_time)
-
+                    updateCurrentVariableSelections()
                 }
             }, message = "Aligning...", value = 0)
 
@@ -170,10 +166,11 @@ observeEvent(input$data_unaligned, {
     showModal(
         modalDialog(title = "Join/align file", size = "l", fade = F, footer = tagList(modalButton("Close"), actionButton("data_unaligned_finish", "Append")),
             pickerInput("data_unaligned_dataset", "Base Dataset", choices = c()),
-            tags$label("File to align"), tags$br(),
-            verbatimTextOutput("data_unaligned_filename"),
+            tags$label("File to align with/append to selected dataset"), tags$br(),
+                column(3, fileInput("data_unaligned_file", NULL, multiple = F, accept = c(".xlsx", ".csv"), width = "100%")),
+            #verbatimTextOutput("data_unaligned_filename"),
             fluidRow(
-                column(3, shinyFilesButton("data_unaligned_file", label = "Browse...", title = "", multiple = F)),
+                #column(3, shinyFilesButton("data_unaligned_file", label = "Browse...", title = "", multiple = F)),
                 column(9, pickerInput("data_unaligned_vars", NULL, c(), width = "100%", multiple = T, options = list(`actions-box`=T, title = "Variables to import")))
             ),
             tags$hr(),
