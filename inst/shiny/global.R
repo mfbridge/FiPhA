@@ -57,6 +57,7 @@ packages = c(
     "ggprism",
     "ggrepel",
     "gsignal",
+    "htmlwidgets",
     "lubridate",
     #"lme4", # loading the lme4 namespace conflicts with some other packages that are used
     "nlsr",

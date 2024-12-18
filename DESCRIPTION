@@ -23,6 +23,7 @@ Imports:
     ggprism,
     ggrepel,
     gsignal,
+    htmlwidgets,
     lubridate,
     lme4,
     nlsr,
