@@ -49,7 +49,7 @@ output$events_preview = renderPlotly({
                 left.minima = peaks$loc[1]
                 right.minima = peaks$loc[length(peaks$loc)]
 
-                browser()
+                #browser()
 
                 for (ii in (maxpeaki+1):(length(peaks$pks)-1)) {
                     if (is.na(peaks$pks[ii-1]) | is.na(peaks$pks[ii+1])) {
