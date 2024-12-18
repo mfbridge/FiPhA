@@ -34,6 +34,7 @@ Imports:
     readxl,
     rstudioapi,
     scales,
+    splines,
     shiny,
     shinycssloaders,
     shinyFiles,

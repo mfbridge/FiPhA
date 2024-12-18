@@ -67,6 +67,7 @@ packages = c(
     "readr",
     "readxl",
     "scales",
+    "splines",
     "shiny",
     "shinycssloaders",
     "shinyFiles",

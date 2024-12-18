@@ -48,17 +48,28 @@ output$events_preview = renderPlotly({
                 # find which local minima are next to our global max
                 left.minima = peaks$loc[1]
                 right.minima = peaks$loc[length(peaks$loc)]
+
+                browser()
+
                 for (ii in (maxpeaki+1):(length(peaks$pks)-1)) {
-                    # find first local maxima
-                    if (peaks$pks[ii-1] > peaks$pks[ii] & peaks$pks[ii] < peaks$pks[ii+1]) {
-                        right.minima = peaks$loc[ii]
-                        break
+                    if (is.na(peaks$pks[ii-1]) | is.na(peaks$pks[ii+1])) {
+
+                    } else {
+                        # find first local maxima
+                        if (peaks$pks[ii-1] > peaks$pks[ii] & peaks$pks[ii] < peaks$pks[ii+1]) {
+                            right.minima = peaks$loc[ii]
+                            break
+                        }
                     }
                 }
                 for (ii in (maxpeaki-1):2) {
-                    if (peaks$pks[ii-1] > peaks$pks[ii] & peaks$pks[ii] < peaks$pks[ii+1]) {
-                        left.minima = peaks$loc[ii]
-                        break
+                    if (is.na(peaks$pks[ii-1]) | is.na(peaks$pks[ii+1])) {
+
+                    } else {
+                        if (peaks$pks[ii-1] > peaks$pks[ii] & peaks$pks[ii] < peaks$pks[ii+1]) {
+                            left.minima = peaks$loc[ii]
+                            break
+                        }
                     }
                 }
                 #print(peaks)
@@ -76,6 +87,7 @@ output$events_preview = renderPlotly({
                     `Fall Time` = fall.est
                 )), fill = T)
 
+            #}
             })
             #} else {
             #    showNotification("Could not find any peaks with specified parameters.", type = "error")
