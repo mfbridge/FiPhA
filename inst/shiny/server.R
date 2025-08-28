@@ -84,6 +84,7 @@ server = function(input, output, session) {
     source("analysis/boxplots.R", local = T)
     source("analysis/lag.R", local = T)
     source("analysis/power.R", local = T)
+    source("analysis/corr.R", local = T)
 
     # export tab
     source("shiny/export.R", local = T)

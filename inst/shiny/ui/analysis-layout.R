@@ -194,5 +194,22 @@ analysis.ui = navbarMenu("Analysis",
             )
         )
 
+    ),
+
+    tabPanel("event variable correlation",
+        card(
+            card_header(
+                layout_columns(class = "m-0", col_widths = c(3, 2, 2, 2, 2, 1),
+                    virtualSelectInput("summary_corr_events", "Dataset/Event(s)", choices = c(), multiple = T, optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_corr_x", "X Variable", choices = c(), multiple = F, placeholder = "X", optionHeight = "24rem", width = "100%"),
+                    virtualSelectInput("summary_corr_y", "Y Variable", choices = c(), multiple = F, placeholder = "Y", optionHeight = "24rem", width = "100%"),
+                    numericInput("summary_corr_window", "Window (sec)", 1, min = 0, step = 0.01),
+                    numericInput("summary_corr_resolution", "Res. (sec)", 0.25, min = 0, step = 0.01),
+                    downloadButton("summary_corr_download", label = NULL)
+                )
+            ),
+            plotOutput("summary_corr_plot", fill = T),
+            tableOutput("summary_corr_table")
+        )
     )
 )

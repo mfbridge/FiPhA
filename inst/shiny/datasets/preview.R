@@ -47,11 +47,19 @@ observeEvent(input$data_corr_append, {
     n.bins = ceiling((max.t - min.t) / input$data_corr_window)
     t0 = min.t
     t = data$raw[[input$data_dataset]][, get(data$meta[[input$data_dataset]]$time)]
+
+    est.dt = mean(na.omit(data$raw[[input$data_dataset]][, (get(data$meta[[input$data_dataset]]$time) - shift(get(data$meta[[input$data_dataset]]$time), n = 1))]))
+
     while (t0 < max.t & input$data_corr_resolution > 0) {
         subset.x = data$raw[[input$data_dataset]][(t0 <= get(data$meta[[input$data_dataset]]$time)) & (get(data$meta[[input$data_dataset]]$time) < t0 + input$data_corr_window), get(input$data_signal_var)]
         subset.y = data$raw[[input$data_dataset]][(t0 <= get(data$meta[[input$data_dataset]]$time)) & (get(data$meta[[input$data_dataset]]$time) < t0 + input$data_corr_window), get(input$data_corr_var2)]
 
-        .dt = rbindlist(list(.dt, data.table(t = t0, correlation = xcov(subset.x, subset.y, maxlag = 0, scale = "coeff")$C[[1]])))
+        if (any(c(length(subset.x), length(subset.y)) < 0.5 * input$data_corr_window / est.dt)) {
+
+            .dt = rbindlist(list(.dt, data.table(t = t0, correlation = NA)))
+        } else {
+            .dt = rbindlist(list(.dt, data.table(t = t0, correlation = cor(subset.x, subset.y, method = "pearson"))))
+        }
 
         t0 = t0 + input$data_corr_resolution
     }

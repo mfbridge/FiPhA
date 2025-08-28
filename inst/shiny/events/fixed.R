@@ -22,8 +22,9 @@ output$events_fixed_list = renderExcel({
 
 identify.fixed.events = function(dt, t, event.table = NULL, type = "") {
     mindt = dt[2, get(t)] - dt[1, get(t)]
-    event.table[, length := max(end - start, mindt)] # minimum length of one time step at each event
-    event.table[, end := start + length] # recalculate `end` as it may have been equal to `start` if the event was a single frame
+
+    event.table[, length := end - start] # minimum length of one time step at each event
+    event.table[end - start < mindt, end := start + mindt]
     event.table[, type := type] # passthrough
 
     return(event.table) # :)
