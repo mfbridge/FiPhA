@@ -211,22 +211,18 @@ binary_periods = function(x, t, inverted = F) {
 
     if (inverted) s = !s
 
-    # identify all state transitions (0 -> 1, 1 -> 0)
-    idx = which((is.na(shift(s, n = 1)) & (s == 1)) | ((shift(s, n = 1) == 0) & (s == 1)) | ((shift(s, n = 1) == 1) & (s == 0)) | (is.na(shift(s, n = -1)) & (s == 1)))
+    prev = shift(s, n=1, fill=0)
+    nextv = shift(s, n=-1, fill=0)
 
-    # should always have pairs
-    assert_true(length(idx) %% 2 == 0)
+    starts = which(s == 1 & prev == 0)
+    ends = which(s == 1 & nextv == 0) + 1
 
-    # build list of times
-    r = data.table(start = numeric(), end = numeric())
+    assert_true(length(starts) == length(ends))
 
-    for (i in 1:length(idx)) {
-        if (i %% 2 == 0) {
-            r = rbindlist(list(r, data.table(start = t[idx[i-1]], end = t[idx[i]-1])))
-        }
-    }
+    end_idx = pmin(ends-1, length(s))
 
-    return(r)
+    return(data.table(start = t[starts], end = t[end_idx]))
+
 }
 
 binary2shapes = function(dt, t, y, color, alpha) {

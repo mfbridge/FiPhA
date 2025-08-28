@@ -31,6 +31,7 @@ data.ui = nav("Datasets",
                    actionLink("data_norm", "normalize"),
                    tags$hr(style="margin: 0.4rem;"),
                    actionLink("data_tags", "tags"),
+                   actionLink("data_caltech_append", "append caltech behavior annotation"),
                    circle = F, label = "Transform", size = "xs", inline = T, status = "info"
                ),
                 dropdownButton(
