@@ -91,7 +91,7 @@ observeEvent(input$data_caltech_append_apply, {
 
     events = data.table()
 
-    new.name = "newcol"
+    new.name = input$data_list_cba_column
 
     if (nrow(wins) == 0) {
         # one big window
