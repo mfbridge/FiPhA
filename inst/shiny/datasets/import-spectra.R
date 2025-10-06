@@ -133,7 +133,7 @@ observe({
 
 observe({
     req(!is.integer(input$data_import_spectrometry_files))
-    req(!is.integer(input$data_import_spectrometry_reference))
+    req(spectra.reference$dataset)
     req(spectra.preview$wavelengths, spectra.preview$data.series)
 
     output$data_spectra_linear_preview = renderPlotly({
